@@ -544,7 +544,7 @@ cd "${HOME}/_scratch"
 
 TASKID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
 
-if [[ "$?" -eq 0 ]]
+if [[ -n "$TASKID" ]]
 then
     echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$TASKID]${C_NC}"
 else
