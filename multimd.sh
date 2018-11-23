@@ -29,7 +29,7 @@ C_NC='\033[0m'
 # print header
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.0 (22.11.2018) ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.0 (23.11.2018) ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|           ${C_YELLOW}Written by Viktor Drobot            ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
@@ -493,7 +493,7 @@ do
         COMMAND="\"$AMBERROOT/bin/${T_BINS[$task_idx]}\" -O -i \"${T_CONFIGS[$task_idx]}\" -o \"${T_OUTPUTS[$task_idx]}\" -p \"${T_AMB_PRMTOPS[$task_idx]}\" -c \"${T_AMB_COORDS[$task_idx]}\" -r \"${T_AMB_RESTARTS[$task_idx]}\" -x \"${T_AMB_TRAJS[$task_idx]}\" -inf \"${T_AMB_INFOS[$task_idx]}\""
     elif [[ "ENGINE" -eq "$ENG_NAMD" ]]
     then
-        COMMAND="\"${T_CONFIGS[$task_idx]}\" \"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll"
+        COMMAND="\"$NAMDROOT/namd-runscript.sh\" \"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\""
     fi
 
     # ...and store it in appropriate place

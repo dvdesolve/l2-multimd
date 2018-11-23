@@ -2,12 +2,12 @@
 
 
 # print header
-echo "+-------------------------------------------------+"
-echo "|                                                 |"
-echo "| Lomonosov-2 AMBER runscript v0.1.0 (22.11.2018) |"
-echo "|            Written by Viktor Drobot             |"
-echo "|                                                 |"
-echo "+-------------------------------------------------+"
+echo "+------------------------------------------------+"
+echo "|                                                |"
+echo "| Lomonosov-2 NAMD runscript v0.1.0 (23.11.2018) |"
+echo "|            Written by Viktor Drobot            |"
+echo "|                                                |"
+echo "+------------------------------------------------+"
 echo
 echo
 
@@ -58,34 +58,43 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # remove preceding spaces
     line=$(chomp "$line")
 
-    # get nodes and prepare hostfile for mpirun
+    # get nodes and prepare nodelist file for charmrun
     DATADIR=$(chomp "`echo "$line" | awk '{$1 = ""; print $0}'`")
     cd "$DATADIR"
 
+    echo "group main" > nodelist.$$
+
     NUMNODES=`echo "$line" | awk '{print $1}'`
-    NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE"`
+    NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE" | awk '{print "host "$1}'`
     let "node += NUMNODES"
 
-    echo "$NODELIST" > hostfile.$$
+    echo "$NODELIST" >> nodelist.$$
 
-    # get command to run
+    # calculate threads count
+    declare -i NUMTHREADS
+    let "NUMTHREADS = 14 * NUMNODES" # TODO this is only for compute/test partitions; should be unified
+
+    # get command to run and proper config file
     COMMAND=`cat "runcmd.$ID"`
 
     # short summary for current task
     echo "Data directory is [$DATADIR]"
     echo "Allocated nodes are:"
-    echo "$NODELIST"
+    cat nodelist.$$
     echo "Command to run is [$COMMAND]"
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval mpirun --hostfile hostfile.$$ $COMMAND &
+    # TEMP for testing only
+#    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND & # TODO the same as previous
+    echo "charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND"
 done < "$DATAROOT/runlist.$ID"
 
 
 # convert runtime to seconds and sleep enough
-SLEEPTIME=`echo "$RUNTIME" | sed 's/:\|-/ /g;' | awk '{print $4" "$3" "$2" "$1}' | awk '{print $1 + $2 * 60 + $3 * 3600 + $4 * 86400}'`
-sleep $SLEEPTIME
+# TEMP for testing only
+#SLEEPTIME=`echo "$RUNTIME" | sed 's/:\|-/ /g;' | awk '{print $4" "$3" "$2" "$1}' | awk '{print $1 + $2 * 60 + $3 * 3600 + $4 * 86400}'`
+#sleep $SLEEPTIME
 
 
 # cleanup global temporary directory
