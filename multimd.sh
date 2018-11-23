@@ -50,12 +50,11 @@ then
     exit $E_OLD_BASH
 fi
 
-# TEMP for testing only!
-#if ! command -v sbatch > /dev/null 2>&1
-#then
-#    echo -e "${C_RED}ERROR: no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting.${C_NC}" >&2
-#    exit $E_NO_SLURM;
-#fi
+if ! command -v sbatch > /dev/null 2>&1
+then
+    echo -e "${C_RED}ERROR: no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting.${C_NC}" >&2
+    exit $E_NO_SLURM;
+fi
 
 # usage help
 if [[ "$#" -ne 2 ]]
@@ -493,7 +492,7 @@ do
         COMMAND="\"$AMBERROOT/bin/${T_BINS[$task_idx]}\" -O -i \"${T_CONFIGS[$task_idx]}\" -o \"${T_OUTPUTS[$task_idx]}\" -p \"${T_AMB_PRMTOPS[$task_idx]}\" -c \"${T_AMB_COORDS[$task_idx]}\" -r \"${T_AMB_RESTARTS[$task_idx]}\" -x \"${T_AMB_TRAJS[$task_idx]}\" -inf \"${T_AMB_INFOS[$task_idx]}\""
     elif [[ "ENGINE" -eq "$ENG_NAMD" ]]
     then
-        COMMAND="\"$NAMDROOT/namd-runscript.sh\" \"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\""
+        COMMAND="\"$NAMDROOT/namd-runscript.sh\" \"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\" > \"${T_OUTPUTS[$task_idx]}\""
     fi
 
     # ...and store it in appropriate place
@@ -540,19 +539,18 @@ echo -e "${C_YELLOW}$CMD${C_NC}"
 echo
 echo
 
-# TEMP for testing only!
 # go to the scratch root and submit job
-#cd "${HOME}/_scratch"
+cd "${HOME}/_scratch"
 
-#TASKID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
+TASKID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
 
-#if [[ "$?" -eq 0 ]]
-#then
-#    echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$TASKID]${C_NC}"
-#else
-#    echo -e "${C_RED}ERROR: something wrong with job queueing! Check SLURM output.${C_NC}" >&2
-#    exit $E_RUN_FAIL
-#fi
+if [[ "$?" -eq 0 ]]
+then
+    echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$TASKID]${C_NC}"
+else
+    echo -e "${C_RED}ERROR: something wrong with job queueing! Check SLURM output.${C_NC}" >&2
+    exit $E_RUN_FAIL
+fi
 
 
 # we're done here

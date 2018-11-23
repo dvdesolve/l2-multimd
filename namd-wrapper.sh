@@ -85,16 +85,13 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    # TEMP for testing only
-#    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND & # TODO the same as previous
-    echo "charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND"
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND & # TODO the same as previous
 done < "$DATAROOT/runlist.$ID"
 
 
 # convert runtime to seconds and sleep enough
-# TEMP for testing only
-#SLEEPTIME=`echo "$RUNTIME" | sed 's/:\|-/ /g;' | awk '{print $4" "$3" "$2" "$1}' | awk '{print $1 + $2 * 60 + $3 * 3600 + $4 * 86400}'`
-#sleep $SLEEPTIME
+SLEEPTIME=`echo "$RUNTIME" | sed 's/:\|-/ /g;' | awk '{print $4" "$3" "$2" "$1}' | awk '{print $1 + $2 * 60 + $3 * 3600 + $4 * 86400}'`
+sleep $SLEEPTIME
 
 
 # cleanup global temporary directory
