@@ -72,7 +72,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 
     # calculate threads count
     declare -i NUMTHREADS
-    let "NUMTHREADS = 14 * NUMNODES" # TODO this is only for compute/test partitions; should be unified
+    let "NUMTHREADS = 14 * NUMNODES"
 
     # get command to run and proper config file
     COMMAND=`cat "runcmd.$ID"`
@@ -85,7 +85,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND & # TODO the same as previous
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND &
 done < "$DATAROOT/runlist.$ID"
 
 
