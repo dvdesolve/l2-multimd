@@ -17,7 +17,7 @@ C_NC='\033[0m'
 
 # default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="multimd.sh amber-wrapper.sh LICENSE README.md"
+FILELIST="multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
 
 
 # print header
