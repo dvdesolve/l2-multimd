@@ -355,7 +355,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # extract remaining parameters and store needed data
     PARAMS=$(chomp "`echo "$line" | awk '{$1 = ""; print $0}'`")
 
-    case "${KEYWORD^^}" in # TODO parse keywords with one spaces-free parameter in more robust way (such as awk '{print $1}')
+    case "${KEYWORD^^}" in
         "DATAROOT")
             DATAROOT="$PARAMS"
             ;;
@@ -378,15 +378,15 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             fi
             ;;
 
-        "RUNTIME") # TODO see above
+        "RUNTIME")
             RUNTIME="$PARAMS"
             ;;
 
-        "PARTITION") # TODO see above
+        "PARTITION")
             PARTITION="$PARAMS"
             ;;
 
-        "NUMNODES") # TODO see above
+        "NUMNODES")
             NUMNODES="$PARAMS"
             ;;
 
