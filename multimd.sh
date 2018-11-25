@@ -29,7 +29,7 @@ C_NC='\033[0m'
 # print header
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.0 (23.11.2018) ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.1 (26.11.2018) ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|           ${C_YELLOW}Written by Viktor Drobot            ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
