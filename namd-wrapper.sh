@@ -4,7 +4,7 @@
 # print header
 echo "+------------------------------------------------+"
 echo "|                                                |"
-echo "| Lomonosov-2 NAMD runscript v0.1.0 (23.11.2018) |"
+echo "| Lomonosov-2 NAMD runscript v0.1.1 (26.11.2018) |"
 echo "|            Written by Viktor Drobot            |"
 echo "|                                                |"
 echo "+------------------------------------------------+"
