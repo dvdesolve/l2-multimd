@@ -89,9 +89,8 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 done < "$DATAROOT/runlist.$ID"
 
 
-# convert runtime to seconds and sleep enough
-SLEEPTIME=`echo "$RUNTIME" | sed 's/:\|-/ /g;' | awk '{print $4" "$3" "$2" "$1}' | awk '{print $1 + $2 * 60 + $3 * 3600 + $4 * 86400}'`
-sleep $SLEEPTIME
+# just wait for all IBVerbs instances are done
+wait
 
 
 # cleanup global temporary directory
