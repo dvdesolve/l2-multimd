@@ -96,7 +96,7 @@ done
 
 echo
 echo -e "${C_GREEN}OK: installation completed.${C_NC}"
-echo -e "${C_YELLOW}INFO: to use bash-completion feature source [$INSTALLPATH/bash-completion/multimd] file manually or at login via your .bashrc"
+echo -e "${C_YELLOW}INFO: to use bash-completion feature source [$INSTALLPATH/bash-completion/multimd] file manually or at login via your .bashrc${C_NC}"
 
 
 # we're done here
