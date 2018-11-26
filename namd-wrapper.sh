@@ -4,7 +4,7 @@
 # print header
 echo "+------------------------------------------------+"
 echo "|                                                |"
-echo "| Lomonosov-2 NAMD runscript v0.1.1 (26.11.2018) |"
+echo "| Lomonosov-2 NAMD runscript v0.1.2 (26.11.2018) |"
 echo "|            Written by Viktor Drobot            |"
 echo "|                                                |"
 echo "+------------------------------------------------+"
@@ -27,7 +27,7 @@ fi
 
 # get list of allocated nodes...
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > $HOSTFILE || { rm -f $HOSTFILE; exit 255; }
+srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > $HOSTFILE || { rm -f $HOSTFILE; exit 255; }
 
 # ...and re-count them
 declare -i TOTALNODES
@@ -65,7 +65,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo "group main" > nodelist.$$
 
     NUMNODES=`echo "$line" | awk '{print $1}'`
-    NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE" | awk '{print "host "$1}'`
+    NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE"`
     let "node += NUMNODES"
 
     echo "$NODELIST" >> nodelist.$$
