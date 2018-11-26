@@ -1,0 +1,20 @@
+# bash-completion support for l2-multimd tool
+
+_multimd() {
+    local ENGINES
+    ENGINES="amber namd"
+
+    case $COMP_CWORD in
+        1)
+            COMPREPLY=( $(compgen -W "${ENGINES}" -- "${COMP_WORDS[COMP_CWORD]}") )
+            ;;
+
+        2)
+            COMPREPLY=( $(compgen -o default -- "${COMP_WORDS[COMP_CWORD]}") )
+            ;;
+    esac
+
+    return 0
+}
+
+complete -F _multimd multimd.sh

@@ -17,13 +17,13 @@ C_NC='\033[0m'
 
 # default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
+FILELIST="bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
 
 
 # print header
 echo -e "${C_BLUE}+-------------------------------------------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                                                   |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.1.1 (23.11.2018) ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.1.2 (26.11.2018) ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                     ${C_YELLOW}Written by Viktor Drobot                      ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                                                   |${C_NC}"
 echo -e "${C_BLUE}+-------------------------------------------------------------------+${C_NC}"
@@ -82,7 +82,7 @@ do
         MODE="755"
     fi
 
-    install -Dm$MODE "$f" "$INSTALLPATH"
+    install -Dm$MODE "$f" "$INSTALLPATH/$f"
 
     if [[ "$?" -eq 0 ]]
     then
@@ -96,6 +96,7 @@ done
 
 echo
 echo -e "${C_GREEN}OK: installation completed.${C_NC}"
+echo -e "${C_YELLOW}INFO: to use bash-completion feature source [$INSTALLPATH/bash-completion/multimd] file manually or at login via your .bashrc"
 
 
 # we're done here
