@@ -535,8 +535,9 @@ echo -e "${C_YELLOW}$CMD${C_NC}"
 echo
 echo
 
-# go to the scratch root and submit job
-cd "${HOME}/_scratch"
+
+# go to the data root and submit job
+cd "${DATAROOT}"
 
 SLURMID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
 

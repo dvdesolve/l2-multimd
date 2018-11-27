@@ -13,7 +13,7 @@ source colors.sh
 
 # default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
+FILELIST="colors.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
 
 
 # print header
@@ -79,11 +79,18 @@ do
         MODE="755"
     fi
 
+    if [[ -e "$INSTALLPATH/$f" ]]
+    then
+        POSTFIX=' (overwritten)'
+    else
+        POSTFIX=''
+    fi
+
     install -Dm$MODE "$f" "$INSTALLPATH/$f"
 
     if [[ "$?" -eq 0 ]]
     then
-        echo -e "${C_GREEN}ok${C_NC}"
+        echo -e "${C_GREEN}ok$POSTFIX${C_NC}"
     else
         echo -e "${C_RED}fail${C_NC}"
         exit $E_ERR_INST
