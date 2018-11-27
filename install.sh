@@ -8,11 +8,7 @@ E_ERR_INST=4
 
 
 # coloring support
-C_RED='\033[1;31m'
-C_GREEN='\033[1;32m'
-C_BLUE='\033[1;34m'
-C_YELLOW='\033[1;33m'
-C_NC='\033[0m'
+source colors.sh
 
 
 # default settings
@@ -21,12 +17,12 @@ FILELIST="bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LI
 
 
 # print header
-echo -e "${C_BLUE}+-------------------------------------------------------------------+${C_NC}"
-echo -e "${C_BLUE}|                                                                   |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.1.2 (26.11.2018) ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|                     ${C_YELLOW}Written by Viktor Drobot                      ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|                                                                   |${C_NC}"
-echo -e "${C_BLUE}+-------------------------------------------------------------------+${C_NC}"
+echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"
+echo -e "${C_BLUE}|                                                      |${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.2.2 ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}|               ${C_YELLOW}Written by Viktor Drobot               ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}|                                                      |${C_NC}"
+echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"
 echo
 echo
 
@@ -34,46 +30,47 @@ echo
 # some checks
 if [ -z "$BASH_VERSION" ]
 then
-    echo -e "${C_RED}ERROR: this script support only BASH interpreter! Exiting.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} this script support only BASH interpreter! Exiting" >&2
     exit $E_NOTABASH
 fi
 
 if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
 then
-    echo -e "${C_RED}ERROR: this script needs BASH 4.0 or greater! Your current version is $BASH_VERSION. Exiting.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} this script needs BASH 4.0 or greater! Your current version is $BASH_VERSION. Exiting" >&2
     exit $E_OLD_BASH
 fi
 
 
-# check our distrib for consistency
-echo -e "${C_YELLOW}INFO: checking integrity of source package${C_NC}"
+# print installation path and check our distrib for consistency
+echo -e "${C_PURPLE}INFO:${C_NC} will install everything into ${C_YELLOW}[$INSTALLPATH]${C_NC}"
+echo -e "${C_PURPLE}INFO:${C_NC} checking integrity of source package..."
 
 for f in $FILELIST
 do
     if [[ ! -e "$f" ]]
     then
-        echo -e "${C_RED}ERROR: file [$f] wasn't found in source tree. Exiting.${C_NC}" >&2
+        echo -e "${C_RED}ERROR:${C_NC} file ${C_YELLOW}[$f]${C_NC} wasn't found in source tree. Exiting" >&2
         exit $E_NO_FILES
     fi
 done
 
-echo -e "${C_GREEN}OK: source tree looks good.${C_NC}"
+echo -e "${C_GREEN}OK:${C_NC} source tree looks good"
 echo
 
 if [[ ! -d "$INSTALLPATH" ]]
 then
-    echo -e "${C_YELLOW}INFO: doing a fresh install.${C_NC}"
+    echo -e "${C_PURPLE}INFO:${C_NC} doing a fresh install"
     mkdir -p "$INSTALLPATH"
 else
-    echo -e "${C_YELLOW}INFO: previous installation was found. Will overwrite all destination files. If this is not what you want then press Ctrl+C for 5 seconds${C_NC}"
-    sleep 5
+    echo -n -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten. Press ${C_YELLOW}<ENTER>${C_NC} to continue or ${C_YELLOW}<Ctrl+C>${C_NC} to exit"
+    read
 fi
 
 
 # perform installation
 for f in $FILELIST
 do
-    echo -n -e "${C_YELLOW}INFO: installing file [$f]... ${C_NC}"
+    echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$f]${C_NC}... "
 
     MODE="644"
 
@@ -95,8 +92,8 @@ done
 
 
 echo
-echo -e "${C_GREEN}OK: installation completed.${C_NC}"
-echo -e "${C_YELLOW}INFO: to use bash-completion feature source [$INSTALLPATH/bash-completion/multimd] file manually or at login via your .bashrc${C_NC}"
+echo -e "${C_GREEN}OK:${C_NC} installation completed"
+echo -e "${C_PURPLE}INFO:${C_NC} to use bash-completion feature source ${C_YELLOW}[$INSTALLPATH/bash-completion/multimd]${C_NC} file manually or at login via your .bashrc"
 
 
 # we're done here
