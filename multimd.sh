@@ -13,7 +13,7 @@ E_RUN_FAIL=8
 
 
 ### coloring support
-source colors.sh
+source $(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/colors.sh
 
 
 # print header

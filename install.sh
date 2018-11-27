@@ -1,19 +1,23 @@
 #!/usr/bin/bash
 
-# error codes
+
+### error codes
 E_NOTABASH=1
 E_OLD_BASH=2
 E_NO_FILES=3
 E_ERR_INST=4
 
 
-# coloring support
-source colors.sh
+### coloring support
+source $(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/colors.sh
 
 
-# default settings
+### default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
 FILELIST="colors.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
+
+
+### main script starts here
 
 
 # print header
