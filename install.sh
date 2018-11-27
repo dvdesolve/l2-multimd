@@ -55,9 +55,9 @@ echo -e "${C_PURPLE}INFO:${C_NC} checking integrity of source package..."
 
 for f in $FILELIST
 do
-    f="$SCRIPTDIR/$f"
+    srcf="$SCRIPTDIR/$f"
 
-    if [[ ! -e "$f" ]]
+    if [[ ! -e "$srcf" ]]
     then
         echo -e "${C_RED}ERROR:${C_NC} file ${C_YELLOW}[$f]${C_NC} wasn't found in source tree. Exiting" >&2
         exit $E_NO_FILES
@@ -80,9 +80,9 @@ fi
 # perform installation
 for f in $FILELIST
 do
-    f="$SCRIPTDIR/$f"
+    srcf="$SCRIPTDIR/$f"
 
-    echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$(basename "$f")]${C_NC}... "
+    echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$f]${C_NC}... "
 
     MODE="644"
 
@@ -98,7 +98,7 @@ do
         POSTFIX=''
     fi
 
-    install -Dm$MODE "$f" "$INSTALLPATH/$f"
+    install -Dm$MODE "$srcf" "$INSTALLPATH/$f"
 
     if [[ "$?" -eq 0 ]]
     then
