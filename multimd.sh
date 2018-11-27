@@ -12,8 +12,12 @@ E_NO_SLURM=7
 E_RUN_FAIL=8
 
 
+### script directory
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+
+
 ### coloring support
-source $(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/colors.sh
+source "$SCRIPTDIR/colors.sh"
 
 
 # print header
@@ -69,8 +73,10 @@ JOBID=$$
 declare -i ENGINE
 ENGINE=$ENG_AMBER
 
-AMBERTASK="${HOME}/_scratch/opt/l2-multimd/amber-wrapper.sh"
-NAMDTASK="${HOME}/_scratch/opt/l2-multimd/namd-wrapper.sh"
+#AMBERTASK="${HOME}/_scratch/opt/l2-multimd/amber-wrapper.sh"
+#NAMDTASK="${HOME}/_scratch/opt/l2-multimd/namd-wrapper.sh"
+AMBERTASK="$SCRIPTDIR/amber-wrapper.sh"
+NAMDTASK="$SCRIPTDIR/namd-wrapper.sh"
 
 
 ### default settings for executing tasks

@@ -8,8 +8,12 @@ E_NO_FILES=3
 E_ERR_INST=4
 
 
+### script directory
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+
+
 ### coloring support
-source $(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/colors.sh
+source "$SCRIPTDIR/colors.sh"
 
 
 ### default settings
@@ -51,6 +55,8 @@ echo -e "${C_PURPLE}INFO:${C_NC} checking integrity of source package..."
 
 for f in $FILELIST
 do
+    f="$SCRIPTDIR/$f"
+
     if [[ ! -e "$f" ]]
     then
         echo -e "${C_RED}ERROR:${C_NC} file ${C_YELLOW}[$f]${C_NC} wasn't found in source tree. Exiting" >&2
@@ -74,6 +80,8 @@ fi
 # perform installation
 for f in $FILELIST
 do
+    f="$SCRIPTDIR/$f"
+
     echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$f]${C_NC}... "
 
     MODE="644"
