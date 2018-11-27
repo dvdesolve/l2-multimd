@@ -40,11 +40,11 @@ then
     exit $E_OLD_BASH
 fi
 
-#if ! command -v sbatch > /dev/null 2>&1
-#then
-#    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
-#    exit $E_NO_SLURM;
-#fi
+if ! command -v sbatch > /dev/null 2>&1
+then
+    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
+    exit $E_NO_SLURM;
+fi
 
 # usage help
 if [[ "$#" -ne 2 ]]
