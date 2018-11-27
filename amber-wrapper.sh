@@ -18,6 +18,16 @@ chomp () {
 }
 
 
+# extract executable file name from command string
+binname() {
+    declare -a p
+    eval p=($@)
+    set -- "${p[@]}"
+
+    echo `basename "$1"`
+}
+
+
 # set correct temporary directory
 if [[ -z "$TMPDIR" ]]
 then
@@ -66,7 +76,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE"`
     let "node += NUMNODES"
 
-    echo "$NODELIST" > hostfile.$$
+    echo "$NODELIST" > hostfile.$ID
 
     # get command to run
     COMMAND=`cat "runcmd.$ID"`
@@ -78,8 +88,21 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo "Command to run is [$COMMAND]"
     echo
 
+    # construct final run command depending on executable filename
+    RUNCMD=''
+
+    case $(binname "$COMMAND") in
+        sander|pmemd|pmemd.cuda)
+            RUNCMD="srun --nodes=1 --nodelist=$NODELIST $COMMAND"
+            ;;
+
+        *)
+            RUNCMD="mpirun --hostfile hostfile.$ID $COMMAND"
+            ;;
+    esac
+
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval mpirun --hostfile hostfile.$$ $COMMAND &
+    eval $RUNCMD &
 done < "$DATAROOT/runlist.$ID"
 
 

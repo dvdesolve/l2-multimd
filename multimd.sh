@@ -40,11 +40,11 @@ then
     exit $E_OLD_BASH
 fi
 
-if ! command -v sbatch > /dev/null 2>&1
-then
-    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
-    exit $E_NO_SLURM;
-fi
+#if ! command -v sbatch > /dev/null 2>&1
+#then
+#    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
+#    exit $E_NO_SLURM;
+#fi
 
 # usage help
 if [[ "$#" -ne 2 ]]
@@ -291,6 +291,20 @@ task () {
                 ;;
         esac
     done
+
+    # check for consistency between executable and requested number of nodes for AMBER engine
+    if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
+    then
+        case "${T_BINS[$idx]}" in
+            sander|pmemd|pmemd.cuda)
+                if [[ "${T_NODES[$idx]}" -gt 1 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Executable ${C_YELLOW}[${T_BINS[$idx]}]${C_NC} could be only run on 1 node, but requested number is ${C_YELLOW}[${T_NODES[$idx]}]${C_NC}. Exiting"
+                    exit $E_INV_TASK
+                fi 
+                ;;
+        esac
+    fi
 }
 
 

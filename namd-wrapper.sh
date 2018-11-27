@@ -62,13 +62,13 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     DATADIR=$(chomp "`echo "$line" | awk '{$1 = ""; print $0}'`")
     cd "$DATADIR"
 
-    echo "group main" > nodelist.$$
+    echo "group main" > nodelist.$ID
 
     NUMNODES=`echo "$line" | awk '{print $1}'`
     NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE"`
     let "node += NUMNODES"
 
-    echo "$NODELIST" >> nodelist.$$
+    echo "$NODELIST" >> nodelist.$ID
 
     # calculate threads count
     declare -i NUMTHREADS
@@ -80,12 +80,12 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # short summary for current task
     echo "Data directory is [$DATADIR]"
     echo "Allocated nodes are:"
-    cat nodelist.$$
+    cat nodelist.$ID
     echo "Command to run is [$COMMAND]"
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$$ ++ppn 14 ++runscript $COMMAND &
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn 14 ++runscript $COMMAND &
 done < "$DATAROOT/runlist.$ID"
 
 
