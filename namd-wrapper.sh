@@ -80,7 +80,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # short summary for current task
     echo "Data directory is [$DATADIR]"
     echo "Allocated nodes are:"
-    cat nodelist.$ID
+    cat nodelist.$ID | sed -n '1!p' | awk '{print $2}'
     echo "Command to run is [$COMMAND]"
     echo
 

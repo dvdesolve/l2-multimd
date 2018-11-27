@@ -545,8 +545,7 @@ CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $D
 # give user the last chance to fix anything
 echo
 echo
-echo -e "${C_YELLOW}$((NUMTASKS - NUMERRORS))/$NUMTASKS${C_NC} commands prepared successfully"
-echo "Command that will be run:"
+echo -e "${C_YELLOW}$((NUMTASKS - NUMERRORS))/$NUMTASKS${C_NC} commands prepared successfully. Command that will be run:"
 echo -e "${C_GREEN}$CMD${C_NC}"
 echo
 echo -n -e "Press ${C_YELLOW}<ENTER>${C_NC} to perform run or ${C_YELLOW}<Ctrl+C>${C_NC} to exit"

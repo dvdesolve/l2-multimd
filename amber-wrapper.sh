@@ -84,7 +84,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # short summary for current task
     echo "Data directory is [$DATADIR]"
     echo "Allocated nodes are:"
-    echo "$NODELIST"
+    echo "$NODELIST" | awk '{print $1}'
     echo "Command to run is [$COMMAND]"
     echo
 
@@ -93,6 +93,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 
     case $(binname "$COMMAND") in
         sander|pmemd|pmemd.cuda)
+            NODELIST=`echo "$NODELIST" | awk '{print $1}'` # leave only node hostname
             RUNCMD="srun --nodes=1 --nodelist=$NODELIST $COMMAND"
             ;;
 
