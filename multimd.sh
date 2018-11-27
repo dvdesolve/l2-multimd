@@ -29,7 +29,7 @@ C_NC='\033[0m'
 # print header
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.1 (26.11.2018) ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.2 (27.11.2018) ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|           ${C_YELLOW}Written by Viktor Drobot            ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                               |${C_NC}"
 echo -e "${C_BLUE}+-----------------------------------------------+${C_NC}"
@@ -40,19 +40,19 @@ echo
 # perform some checks
 if [ -z "$BASH_VERSION" ]
 then
-    echo -e "${C_RED}ERROR: this script support only BASH interpreter! Exiting.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} this script support only BASH interpreter! Exiting." >&2
     exit $E_NOTABASH
 fi
 
 if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
 then
-    echo -e "${C_RED}ERROR: this script needs BASH 4.0 or greater! Your current version is $BASH_VERSION. Exiting.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} this script needs BASH 4.0 or greater! Your current version is $BASH_VERSION. Exiting." >&2
     exit $E_OLD_BASH
 fi
 
 if ! command -v sbatch > /dev/null 2>&1
 then
-    echo -e "${C_RED}ERROR: no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting." >&2
     exit $E_NO_SLURM;
 fi
 
@@ -69,6 +69,7 @@ KEYWORDS="DATAROOT AMBERROOT NAMDROOT RUNTIME PARTITION NUMNODES BIN TASK"
 
 
 ### some defaults
+JOBID=$$
 SLEEPTIME=5
 
 declare -i ENGINE
@@ -164,7 +165,7 @@ task () {
             -N|--nodes)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                     exit $E_INV_TASK
                 fi
 
@@ -175,7 +176,7 @@ task () {
             -b|--bin)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                     exit $E_INV_TASK
                 fi
 
@@ -186,7 +187,7 @@ task () {
             -i|--config)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                     exit $E_INV_TASK
                 fi
 
@@ -197,7 +198,7 @@ task () {
             -o|--out)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                     exit $E_INV_TASK
                 fi
 
@@ -210,13 +211,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                         exit $E_INV_TASK
                     fi
 
                     T_AMB_PRMTOPS[$idx]="$2"
                 else
-                    echo -e "${C_RED}WARNING: skipping AMBER-related parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 fi
 
                 shift 2
@@ -227,13 +228,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                         exit $E_INV_TASK
                     fi
 
                     T_AMB_COORDS[$idx]="$2"
                 else
-                    echo -e "${C_RED}WARNING: skipping AMBER-related parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 fi
 
                 shift 2
@@ -244,13 +245,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                         exit $E_INV_TASK
                     fi
 
                     T_AMB_RESTARTS[$idx]="$2"
                 else
-                    echo -e "${C_RED}WARNING: skipping AMBER-related parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 fi
 
                 shift 2
@@ -261,13 +262,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                         exit $E_INV_TASK
                     fi
 
                     T_AMB_TRAJS[$idx]="$2"
                 else
-                    echo -e "${C_RED}WARNING: skipping AMBER-related parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 fi
 
                 shift 2
@@ -278,20 +279,20 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR: something wrong with the task definition #$((idx + 1)) (line #$lineno)!${C_NC}" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting." >&2
                         exit $E_INV_TASK
                     fi
 
                     T_AMB_INFOS[$idx]="$2"
                 else
-                    echo -e "${C_RED}WARNING: skipping AMBER-related parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 fi
 
                 shift 2
                 ;;
 
             *)
-                echo -e "${C_RED}WARNING: skipping unknown parameter [$token] in task definition #$((idx + 1)) (line #$lineno)...${C_NC}" >&2
+                echo -e "${C_RED}WARNING:${C_NC} skipping unknown parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
                 shift
                 ;;
         esac
@@ -313,7 +314,7 @@ case "${1^^}" in
         ;;
 
     *)
-        echo -e "${C_RED}ERROR: unsupported engine [$1] is given! Exiting.${C_NC}" >&2
+        echo -e "${C_RED}ERROR:${C_NC} unsupported engine ${C_YELLOW}[$1]${C_NC} is given! Exiting." >&2
         exit $E_UNK_ENGN
         ;;
 esac
@@ -348,7 +349,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     # check if our keyword is supported
     if ! echo "$KEYWORDS" | grep -i -q -P "(^|[[:space:]])$KEYWORD(\$|[[:space:]])"
     then
-        echo -e "${C_RED}WARNING: ignoring unknown keyword [$KEYWORD] (line #$lineno)...${C_NC}" >&2
+        echo -e "${C_RED}WARNING:${C_NC} ignoring unknown keyword ${C_YELLOW}[$KEYWORD${C_NC}] (line ${C_YELLOW}#$lineno${C_NC})..." >&2
         continue
     fi
 
@@ -365,7 +366,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             then
                 AMBERROOT="$PARAMS"
             else
-                echo -e "${C_RED}WARNING: ignoring AMBER-related keyword [$KEYWORD] (line #$lineno)...${C_NC}" >&2
+                echo -e "${C_RED}WARNING:${C_NC} ignoring AMBER-related keyword ${C_YELLOW}[$KEYWORD]${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
             fi
             ;;
 
@@ -374,7 +375,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             then
                 NAMDROOT="$PARAMS"
             else
-                echo -e "${C_RED}WARNING: ignoring NAMD-related keyword [$KEYWORD] (line #$lineno)...${C_NC}" >&2
+                echo -e "${C_RED}WARNING:${C_NC} ignoring NAMD-related keyword ${C_YELLOW}[$KEYWORD]${C_NC} (line ${C_YELLOW}#$lineno${C_NC})..." >&2
             fi
             ;;
 
@@ -415,7 +416,7 @@ NUMTASKS="$task_idx"
 # check if something wrong with given taskfile, e. g. necessary keywords are omitted or no tasks to run
 if [[ -z "$DATAROOT" || -z "$AMBERROOT$NAMDROOT" || -z "$RUNTIME" || -z "$PARTITION" || "$NUMTASKS" -eq 0 ]]
 then
-    echo -e "${C_RED}ERROR: something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT, RUNTIME, PARTITION directives and the number of tasks given)!${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting." >&2
     exit $E_INV_CONF
 fi
 
@@ -455,7 +456,7 @@ declare -i TOTALNODES
 TOTALNODES=0
 
 # file with final list of directories to be processed
-RUNLIST="$DATAROOT/runlist.$$"
+RUNLIST="$DATAROOT/runlist.$JOBID"
 :> "$RUNLIST"
 
 for ((task_idx=0; task_idx < NUMTASKS; task_idx++))
@@ -479,12 +480,12 @@ do
 
         if [[ "${T_AMB_COORDS[$task_idx]}" == "${T_AMB_RESTARTS[$task_idx]}" ]]
         then
-            echo -e "${C_RED}WARNING: coordinates and restart files are the same! Original coordinates will be overwritten!${C_NC}" >&2
+            echo -e "${C_RED}WARNING:${C_NC} coordinates and restart files are the same! Original coordinates will be overwritten!" >&2
         fi
     fi
 
     echo -e "${C_BLUE}------${C_NC}"
-    echo -n -e "Trying to save prepared command to ${C_YELLOW}[${DATAROOT%/}/${T_DIRS[$task_idx]}/runcmd.$$]${C_NC}... "
+    echo -n -e "Trying to save prepared command to ${C_YELLOW}[${DATAROOT%/}/${T_DIRS[$task_idx]}/runcmd.$JOBID]${C_NC}... "
 
     # now we'll build final execution line...
     if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
@@ -496,7 +497,7 @@ do
     fi
 
     # ...and store it in appropriate place
-    echo "$COMMAND" 2> /dev/null > "${DATAROOT%/}/${T_DIRS[$task_idx]}/runcmd.$$"
+    echo "$COMMAND" 2> /dev/null > "${DATAROOT%/}/${T_DIRS[$task_idx]}/runcmd.$JOBID"
 
     if [[ "$?" -eq 0 ]]
     then
@@ -533,7 +534,7 @@ then
     WRAPPER="$NAMDTASK"
 fi
 
-CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $$ $RUNTIME $DATAROOT"
+CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $DATAROOT"
 echo "Command that will be run:"
 echo -e "${C_YELLOW}$CMD${C_NC}"
 echo
@@ -542,13 +543,13 @@ echo
 # go to the scratch root and submit job
 cd "${HOME}/_scratch"
 
-TASKID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
+SLURMID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
 
-if [[ -n "$TASKID" ]]
+if [[ -n "$SLURMID" ]]
 then
-    echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$TASKID]${C_NC}"
+    echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$SLURMID]${C_NC}"
 else
-    echo -e "${C_RED}ERROR: something wrong with job queueing! Check SLURM output.${C_NC}" >&2
+    echo -e "${C_RED}ERROR:${C_NC} something wrong with job queueing! Check SLURM output. Exiting." >&2
     exit $E_RUN_FAIL
 fi
 
