@@ -82,7 +82,7 @@ for f in $FILELIST
 do
     f="$SCRIPTDIR/$f"
 
-    echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$f]${C_NC}... "
+    echo -n -e "${C_PURPLE}INFO:${C_NC} installing file ${C_YELLOW}[$(basename "$f")]${C_NC}... "
 
     MODE="644"
 
