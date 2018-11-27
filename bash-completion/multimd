@@ -18,3 +18,8 @@ _multimd() {
 }
 
 complete -F _multimd multimd.sh
+complete -F _multimd l2-multimd
+
+
+# alias for better usability
+alias l2-multimd="~/_scratch/opt/l2-multimd/multimd.sh"
