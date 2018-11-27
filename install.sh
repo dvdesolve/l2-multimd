@@ -100,7 +100,7 @@ done
 
 echo
 echo -e "${C_GREEN}OK:${C_NC} installation completed"
-echo -e "${C_PURPLE}INFO:${C_NC} to use bash-completion feature source ${C_YELLOW}[$INSTALLPATH/bash-completion/multimd]${C_NC} file manually or at login via your .bashrc"
+echo -e "${C_PURPLE}INFO:${C_NC} if you want use bash-completion feature and ${C_GREEN}[l2-multimd]${C_NC} alias then source ${C_YELLOW}[$INSTALLPATH/bash-completion/multimd]${C_NC} file manually or at login via your .bashrc"
 
 
 # we're done here
