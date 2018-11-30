@@ -24,7 +24,7 @@ source "$SCRIPTDIR/colors.sh"
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
 echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.2.2 ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot      ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot     ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
 echo
