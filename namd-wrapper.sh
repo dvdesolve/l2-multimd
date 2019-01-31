@@ -85,7 +85,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn 14 ++runscript $COMMAND &
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn 14 $COMMAND &
 done < "$DATAROOT/runlist.$ID"
 
 
