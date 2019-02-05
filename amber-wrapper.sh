@@ -99,7 +99,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 
         sander.MPI|pmemd.MPI)
             sed -i "s/slots=1/slots=14/g" hostfile.$ID
-            RUNCMD="mpirun --hostfile hostfile.$ID --npernode=14 --nooversubscribe $COMMAND"
+            RUNCMD="mpirun --hostfile hostfile.$ID --npernode 14 --nooversubscribe $COMMAND"
             ;;
 
         *)
