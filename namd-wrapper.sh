@@ -4,7 +4,7 @@
 # print header
 echo "+-----------------------------------+"
 echo "|                                   |"
-echo "| Lomonosov-2 NAMD runscript v0.3.0 |"
+echo "| Lomonosov-2 NAMD runscript v0.4.0 |"
 echo "|      Written by Viktor Drobot     |"
 echo "|                                   |"
 echo "+-----------------------------------+"
@@ -37,17 +37,36 @@ TOTALNODES=`cat "$HOSTFILE" | wc -l`
 # get unique job ID, run time limit and data root directory provided by multimd.sh script
 ID="$1"
 RUNTIME="$2"
-shift 2
+PARTITION="$3"
+shift 3
 DATAROOT="$*"
 
 
 # print short summary
 echo "ID is [$ID]"
-echo "Data root directory is [$DATAROOT]"
 echo "Run time limit is [$RUNTIME]"
+echo "Working partition is [$PARTITION]"
+echo "Data root directory is [$DATAROOT]"
 echo "Allocated [$TOTALNODES] nodes"
 echo
 echo
+
+
+# set correct number of cores per node
+declare -i NUMCORES
+case "${PARTITION,,}" in
+    test|compute)
+        NUMCORES=14
+        ;;
+
+    pascal)
+        NUMCORES=12
+        ;;
+
+    *)
+        NUMCORES=1
+        ;;
+esac
 
 
 # distribute nodes between tasks accordingly and run them
@@ -72,7 +91,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 
     # calculate threads count
     declare -i NUMTHREADS
-    let "NUMTHREADS = 14 * NUMNODES"
+    let "NUMTHREADS = NUMCORES * NUMNODES"
 
     # get command to run and proper config file
     COMMAND=`cat "runcmd.$ID"`
@@ -85,7 +104,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn 14 $COMMAND &
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn $NUMCORES $COMMAND &
 done < "$DATAROOT/runlist.$ID"
 
 

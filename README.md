@@ -47,14 +47,21 @@ Syntax:
 `NAMDROOT /path/to/NAMD/installation`
 
 #### **RUNTIME**
-Sets the runtime limit for the whole bunch of tasks. After that time SLURM will interrupt the job. Default value is `1-00:00:00`.
+Sets the runtime limit for the whole bunch of tasks. After that time SLURM will interrupt the job. Default value is `05:00`.
 
 Syntax:
 `RUNTIME DD-HH:MM:SS`
 NB: any higher part of runtime specification is optional, e. g. you could use such as `RUNTIME 30:00`
 
+#### **PARTITION**
+Sets the cluster partition to run simulation on.
+
+Syntax:
+`PARTITION partition-name`
+Number of CPU cores and GPU cards per node is computed automatically and depends on `partition-name`. Possible values are `test`, `compute` and `pascal`. Default value is `test`
+
 #### **NUMNODES**
-Sets default number of nodes per task. Useful if every task from the given list should use the same number of nodes. Default value is `3`.
+Sets default number of nodes per task. Useful if every task from the given list should use the same number of nodes. Default value is `1`.
 
 Syntax:
 `NUMNODES n`
@@ -69,7 +76,7 @@ Syntax:
 This is the core directive of job queueing. It allows you to specify directory name for every task and (in case AMBER engine is used) supply AMBER-friendly list of parameters such as topology files, config files, restart files and much more. The only mandatory argument is directory name for the task. Other parameters could be derived automatically. Unknown parameters are ignored. All parameters (with the exception of nodes number) can contain whitespaces, but remember about quotation!
 
 Syntax:
-`TASK dir-name [-N|--nodes n] [-b|--bin executable-name] [-i|--config config] [-o|--out output] [-p|--prmtop prmtop] [-c|--coord coordinates] [-r|--restart restart] [-x|--traj trajectory] [-inf|--mdinfo info]`
+`TASK dir-name [-N|--nodes n] [-b|--bin executable-name] [-i|--config config] [-o|--output output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info]`
 
 ##### `dir-name`
 This is the directory name where all necessary files for one task is stored.
@@ -90,13 +97,19 @@ Where all output is kept. Default value is `dir-name.out`
 AMBER-aware directive. Topology file for task. Default value is `dir-name.prmtop`
 
 ##### `coordinates`
-AMBER-aware directive. File with starting coordinates (and velocities, probably) for run. Default value is `dir-name.rst`
+AMBER-aware directive. File with starting coordinates (and velocities, probably) for run. Default value is `dir-name.ncrst`
 
 ##### `restart`
-AMBER-aware directive. AMBER will save restart snapshots here. Default value is `dir-name.rst`. NB: there could be collision with `coordinates` file!
+AMBER-aware directive. AMBER will save restart snapshots here. Default value is `dir-name.ncrst`. NB: there could be collision with `coordinates` file!
+
+##### `restraints`
+AMBER-aware directive. AMBER reads positional restraints from that file. There is no default value for this parameter.
 
 ##### `trajectory`
 AMBER-aware directive. File in which MD trajectory should be saved. NetCDF-format. Default value is `dir-name.nc`
+
+##### `velocities`
+AMBER-aware directive. AMBER will save velocities info here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
 
 ##### `info`
 AMBER-aware directive. Place where all MD run statistics are kept. Default value is `dir-name.mdinfo`

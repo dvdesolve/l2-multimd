@@ -27,7 +27,7 @@ FILELIST="colors.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wra
 # print header
 echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                                      |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.3.0 ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.4.0 ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|               ${C_YELLOW}Written by Viktor Drobot               ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                                      |${C_NC}"
 echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"

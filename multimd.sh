@@ -23,7 +23,7 @@ source "$SCRIPTDIR/colors.sh"
 # print header
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.3.0 ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.0 ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot     ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
@@ -83,13 +83,13 @@ NAMDTASK="$SCRIPTDIR/namd-wrapper.sh"
 DATAROOT=''
 AMBERROOT=''
 NAMDROOT=''
-RUNTIME='1-00:00:00'
-PARTITION='compute'
+RUNTIME='05:00'
+PARTITION='test'
 
 declare -i NUMNODES
-NUMNODES=3
+NUMNODES=1
 
-BIN="pmemd.cuda.MPI"
+BIN="sander"
 
 declare -i NUMTASKS
 NUMTASKS=0
@@ -97,6 +97,7 @@ NUMTASKS=0
 
 ### here we will store our configurations
 declare -a T_DIRS
+declare -a T_BASENAMES
 declare -a T_NODES
 declare -a T_BINS
 declare -a T_CONFIGS
@@ -104,7 +105,9 @@ declare -a T_OUTPUTS
 declare -a T_AMB_PRMTOPS
 declare -a T_AMB_COORDS
 declare -a T_AMB_RESTARTS
+declare -a T_AMB_REFCS
 declare -a T_AMB_TRAJS
+declare -a T_AMB_VELS
 declare -a T_AMB_INFOS
 
 
@@ -127,6 +130,7 @@ task () {
     set -- "${p[@]}"
 
     T_DIRS[$idx]="$1" # store directory name for current task
+    T_BASENAMES[$idx]=`basename "$1"` # get basename for all files
     shift
 
     # apply default parameters from config file
@@ -143,17 +147,19 @@ task () {
         EXT='conf'
     fi
 
-    T_CONFIGS[$idx]="${T_DIRS[$idx]}.${EXT}"
+    T_CONFIGS[$idx]="${T_BASENAMES[$idx]}.${EXT}"
 
-    T_OUTPUTS[$idx]="${T_DIRS[$idx]}.out"
+    T_OUTPUTS[$idx]="${T_BASENAMES[$idx]}.out"
 
     if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
     then
-        T_AMB_PRMTOPS[$idx]="${T_DIRS[$idx]}.prmtop"
-        T_AMB_COORDS[$idx]="${T_DIRS[$idx]}.rst"
-        T_AMB_RESTARTS[$idx]="${T_DIRS[$idx]}.rst"
-        T_AMB_TRAJS[$idx]="${T_DIRS[$idx]}.nc"
-        T_AMB_INFOS[$idx]="${T_DIRS[$idx]}.mdinfo"
+        T_AMB_PRMTOPS[$idx]="${T_BASENAMES[$idx]}.prmtop"
+        T_AMB_COORDS[$idx]="${T_BASENAMES[$idx]}.ncrst"
+        T_AMB_RESTARTS[$idx]="${T_BASENAMES[$idx]}.ncrst"
+        T_AMB_REFCS[$idx]=""
+        T_AMB_TRAJS[$idx]="${T_BASENAMES[$idx]}.nc"
+        T_AMB_VELS[$idx]=""
+        T_AMB_INFOS[$idx]="${T_BASENAMES[$idx]}.mdinfo"
     fi
 
     # parse remaining positional parameters
@@ -195,7 +201,7 @@ task () {
                 shift 2
                 ;;
 
-            -o|--out)
+            -o|--output)
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting" >&2
@@ -223,7 +229,7 @@ task () {
                 shift 2
                 ;;
 
-            -c|--coord)
+            -c|--inpcrd)
                 if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
                 then
                     if [[ "$#" -lt 2 ]]
@@ -240,7 +246,7 @@ task () {
                 shift 2
                 ;;
 
-            -r|--restart)
+            -r|--restrt)
                 if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
                 then
                     if [[ "$#" -lt 2 ]]
@@ -257,7 +263,24 @@ task () {
                 shift 2
                 ;;
 
-            -x|--traj)
+            -ref|--refc)
+                if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
+                then
+                    if [[ "$#" -lt 2 ]]
+                    then
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting" >&2
+                        exit $E_INV_TASK
+                    fi
+
+                    T_AMB_REFCS[$idx]="$2"
+                else
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})" >&2
+                fi
+
+                shift 2
+                ;;
+
+            -x|--mdcrd)
                 if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
                 then
                     if [[ "$#" -lt 2 ]]
@@ -267,6 +290,23 @@ task () {
                     fi
 
                     T_AMB_TRAJS[$idx]="$2"
+                else
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})" >&2
+                fi
+
+                shift 2
+                ;;
+
+            -v|--mdvel)
+                if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
+                then
+                    if [[ "$#" -lt 2 ]]
+                    then
+                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})! Exiting" >&2
+                        exit $E_INV_TASK
+                    fi
+
+                    T_AMB_VELS[$idx]="$2"
                 else
                     echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[$token]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#$lineno${C_NC})" >&2
                 fi
@@ -394,15 +434,15 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             ;;
 
         "RUNTIME")
-            RUNTIME="$PARAMS"
+            RUNTIME=`echo "$PARAMS" | awk '{print $1}'`
             ;;
 
         "PARTITION")
-            PARTITION="$PARAMS"
+            PARTITION=`echo "$PARAMS" | awk '{print $1}'`
             ;;
 
         "NUMNODES")
-            NUMNODES="$PARAMS"
+            NUMNODES=`echo "$PARAMS" | awk '{print $1}'`
             ;;
 
         "BIN")
@@ -489,7 +529,19 @@ do
         echo -e "Topology file is ${C_YELLOW}[${T_AMB_PRMTOPS[$task_idx]}]${C_NC}"
         echo -e "Start coordinates are in file ${C_YELLOW}[${T_AMB_COORDS[$task_idx]}]${C_NC}"
         echo -e "Restart will be written to file ${C_YELLOW}[${T_AMB_RESTARTS[$task_idx]}]${C_NC}"
+
+        if [[ -n "${T_AMB_REFCS[$task_idx]}" ]]
+        then
+            echo -e "Positional restraints are in file ${C_YELLOW}[${T_AMB_REFCS[$task_idx]}]${C_NC}"
+        fi
+
         echo -e "Trajectories will be written to file ${C_YELLOW}[${T_AMB_TRAJS[$task_idx]}]${C_NC}"
+
+        if [[ -n "${T_AMB_VELS[$task_idx]}" ]]
+        then
+            echo -e "Velocities will be written to file ${C_YELLOW}[${T_AMB_VELS[$task_idx]}]${C_NC}"
+        fi
+
         echo -e "MD information will be available in file ${C_YELLOW}[${T_AMB_INFOS[$task_idx]}]${C_NC}"
 
         if [[ "${T_AMB_COORDS[$task_idx]}" == "${T_AMB_RESTARTS[$task_idx]}" ]]
@@ -505,9 +557,24 @@ do
     if [[ "$ENGINE" -eq "$ENG_AMBER" ]]
     then
         COMMAND="\"$AMBERROOT/bin/${T_BINS[$task_idx]}\" -O -i \"${T_CONFIGS[$task_idx]}\" -o \"${T_OUTPUTS[$task_idx]}\" -p \"${T_AMB_PRMTOPS[$task_idx]}\" -c \"${T_AMB_COORDS[$task_idx]}\" -r \"${T_AMB_RESTARTS[$task_idx]}\" -x \"${T_AMB_TRAJS[$task_idx]}\" -inf \"${T_AMB_INFOS[$task_idx]}\""
+
+        if [[ -n "${T_AMB_REFCS[$task_idx]}" ]]
+        then
+            COMMAND="$COMMAND -ref \"${T_AMB_REFCS[$task_idx]}\""
+        fi
+
+        if [[ -n "${T_AMB_VELS[$task_idx]}" ]]
+        then
+            COMMAND="$COMMAND -v \"${T_AMB_VELS[$task_idx]}\""
+        fi
     elif [[ "ENGINE" -eq "$ENG_NAMD" ]]
     then
         COMMAND="\"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\" > \"${T_OUTPUTS[$task_idx]}\""
+    fi
+
+    if [[ "${PARTITION,,}" == "pascal" ]]
+    then
+        COMMAND="CUDA_VISIBLE_DEVICES=0,1 $COMMAND"
     fi
 
     # ...and store it in appropriate place
@@ -539,7 +606,7 @@ then
     WRAPPER="$NAMDTASK"
 fi
 
-CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $DATAROOT"
+CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $PARTITION $DATAROOT"
 
 
 # give user the last chance to fix anything
