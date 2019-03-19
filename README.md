@@ -67,7 +67,7 @@ Syntax:
 `NUMNODES n`
 
 #### **BIN**
-This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `pmemd.cuda.MPI`.
+This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`.
 
 Syntax:
 `BIN executable-name`
