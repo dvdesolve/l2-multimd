@@ -107,7 +107,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo "Command to run is [$COMMAND]"
     echo
 
-    # construct final run command depending on executable filename and partition
+    # construct final run command depending on executable filename
     RUNCMD=''
 
     case $(binname "$COMMAND") in
@@ -117,8 +117,8 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             ;;
 
         sander.MPI|pmemd.MPI)
-            sed -i "s/slots=1/slots=$NUMTHREADS/g" hostfile.$ID
-            RUNCMD="mpirun --hostfile hostfile.$ID --npernode $NUMTHREADS --nooversubscribe $COMMAND"
+            sed -i "s/slots=1/slots=$NUMCORES/g" hostfile.$ID
+            RUNCMD="mpirun --hostfile hostfile.$ID --npernode $NUMCORES --nooversubscribe $COMMAND"
             ;;
 
         *)
