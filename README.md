@@ -76,7 +76,7 @@ Syntax:
 This is the core directive of job queueing. It allows you to specify directory name for every task and (in case AMBER engine is used) supply AMBER-friendly list of parameters such as topology files, config files, restart files and much more. The only mandatory argument is directory name for the task. Other parameters could be derived automatically. Unknown parameters are ignored. All parameters (with the exception of nodes number) can contain whitespaces, but remember about quotation!
 
 Syntax:
-`TASK dir-name [-N|--nodes n] [-b|--bin executable-name] [-i|--config config] [-o|--output output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info]`
+`TASK dir-name [-N|--nodes n] [-b|--bin executable-name] [-i|--config config] [-o|--output output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info] [-cpin cph-input] [-cpout cph-output] [-cprestrt cph-restart] [-groupfile remd-groupfile] [-ng replicas] [-rem re-type]`
 
 ##### `dir-name`
 This is the directory name where all necessary files for one task is stored.
@@ -91,13 +91,13 @@ This is the replacement for default **BIN** executable. Rarely needed.
 This is the file where all settings for MD simulation is specified. Default value is `dir-name.in` in case of AMBER engine or `dir-name.conf` if NAMD engine is used.
 
 ##### `output`
-Where all output is kept. Default value is `dir-name.out`
+Where all output is kept. Default value is `dir-name.out`.
 
 ##### `prmtop`
-AMBER-aware directive. Topology file for task. Default value is `dir-name.prmtop`
+AMBER-aware directive. Topology file for task. Default value is `dir-name.prmtop`.
 
 ##### `coordinates`
-AMBER-aware directive. File with starting coordinates (and velocities, probably) for run. Default value is `dir-name.ncrst`
+AMBER-aware directive. File with starting coordinates (and velocities, probably) for run. Default value is `dir-name.ncrst`.
 
 ##### `restart`
 AMBER-aware directive. AMBER will save restart snapshots here. Default value is `dir-name.ncrst`. NB: there could be collision with `coordinates` file!
@@ -106,10 +106,28 @@ AMBER-aware directive. AMBER will save restart snapshots here. Default value is 
 AMBER-aware directive. AMBER reads positional restraints from that file. There is no default value for this parameter.
 
 ##### `trajectory`
-AMBER-aware directive. File in which MD trajectory should be saved. NetCDF-format. Default value is `dir-name.nc`
+AMBER-aware directive. File in which MD trajectory should be saved. NetCDF-format. Default value is `dir-name.nc`.
 
 ##### `velocities`
 AMBER-aware directive. AMBER will save velocities info here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
 
 ##### `info`
-AMBER-aware directive. Place where all MD run statistics are kept. Default value is `dir-name.mdinfo`
+AMBER-aware directive. Place where all MD run statistics are kept. Default value is `dir-name.mdinfo`.
+
+##### `cph-input`
+AMBER-aware directive. File with protonation state definitions. Default value is empty.
+
+##### `cph-output`
+AMBER-aware directive. Protonation state definitions will be saved here. Default value is empty.
+
+##### `cph-restart`
+AMBER-aware directive. Protonation state definitions for restart will be saved here. Default value is empty.
+
+##### `remd-groupfile`
+AMBER-aware directive. Reference groupfile for replica exchange run. Default value is empty.
+
+##### `replicas`
+AMBER-aware directive. Number of replicas. Default value is empty.
+
+##### `re-type`
+AMBER-aware directive. Replica exchange type. Default value is empty.
