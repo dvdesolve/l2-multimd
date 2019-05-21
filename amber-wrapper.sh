@@ -122,7 +122,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
             ;;
 
         pmemd.cuda.MPI)
-            RUNCMD="mpirun --hostfile hostfile.$ID --npernode 1 $COMMAND"
+            RUNCMD="mpirun --hostfile hostfile.$ID --npernode 1 --nooversubscribe $COMMAND"
             ;;
 
         *)
