@@ -4,7 +4,7 @@
 # print header
 echo "+-----------------------------------+"
 echo "|                                   |"
-echo "| Lomonosov-2 NAMD runscript v0.4.0 |"
+echo "| Lomonosov-2 NAMD runscript v0.4.1 |"
 echo "|      Written by Viktor Drobot     |"
 echo "|                                   |"
 echo "+-----------------------------------+"
@@ -104,7 +104,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn $NUMCORES $COMMAND &
+    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn $NUMCORES ++runscript $COMMAND &
 done < "$DATAROOT/runlist.$ID"
 
 

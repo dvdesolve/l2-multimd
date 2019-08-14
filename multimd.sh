@@ -23,7 +23,7 @@ source "$SCRIPTDIR/colors.sh"
 # print header
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.0 ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.1 ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot     ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
@@ -743,7 +743,7 @@ do
         fi
     elif [[ "ENGINE" -eq "$ENG_NAMD" ]]
     then
-        COMMAND="\"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\" > \"${T_OUTPUTS[$task_idx]}\""
+        COMMAND="\"$NAMDROOT/namd-runscript.sh\" \"$NAMDROOT/${T_BINS[$task_idx]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[$task_idx]}\" > \"${T_OUTPUTS[$task_idx]}\""
     fi
 
     if [[ "${PARTITION,,}" == "pascal" ]]
