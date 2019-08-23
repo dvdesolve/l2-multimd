@@ -23,7 +23,7 @@ source "$SCRIPTDIR/colors.sh"
 # print header
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.1 ${C_BLUE}|${C_NC}"
+echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.2 ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot     ${C_BLUE}|${C_NC}"
 echo -e "${C_BLUE}|                                  |${C_NC}"
 echo -e "${C_BLUE}+----------------------------------+${C_NC}"
@@ -500,6 +500,7 @@ task_idx=0
 
 
 # process given taskfile
+# TODO may be the same behaviour as in wrapper scripts
 while IFS='' read -r line || [[ -n "$line" ]]; do
     # prepare line for parsing
     let lineno++
@@ -780,7 +781,7 @@ then
     WRAPPER="$NAMDTASK"
 fi
 
-CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $PARTITION $DATAROOT"
+CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $PARTITION $((NUMTASKS - NUMERRORS)) $DATAROOT"
 
 
 # give user the last chance to fix anything

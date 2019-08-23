@@ -4,7 +4,7 @@
 # print header
 echo "+-----------------------------------+"
 echo "|                                   |"
-echo "| Lomonosov-2 NAMD runscript v0.4.1 |"
+echo "| Lomonosov-2 NAMD runscript v0.4.2 |"
 echo "|      Written by Viktor Drobot     |"
 echo "|                                   |"
 echo "+-----------------------------------+"
@@ -38,7 +38,8 @@ TOTALNODES=`cat "$HOSTFILE" | wc -l`
 ID="$1"
 RUNTIME="$2"
 PARTITION="$3"
-shift 3
+NUMTASKS="$4"
+shift 4
 DATAROOT="$*"
 
 
@@ -73,7 +74,14 @@ esac
 declare -i node
 node=1
 
-while IFS='' read -r line || [[ -n "$line" ]]; do
+declare -i tnum
+tnum=1
+
+while [[ "$tnum" -le "$NUMTASKS" ]]; do
+    # read task line from runlist
+    line=`sed -n "${tnum},${tnum}p" "$DATAROOT/runlist.$ID"`
+    let "tnum += 1"
+
     # remove preceding spaces
     line=$(chomp "$line")
 
@@ -105,7 +113,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
     eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn $NUMCORES ++runscript $COMMAND &
-done < "$DATAROOT/runlist.$ID"
+done
 
 
 # just wait for all IBVerbs instances are done
