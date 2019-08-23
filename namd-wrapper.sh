@@ -75,12 +75,11 @@ declare -i node
 node=1
 
 declare -i tnum
-tnum=1
 
-while [[ "$tnum" -le "$NUMTASKS" ]]; do
+for ((tnum=1; tnum <= NUMTASKS; tnum++))
+do
     # read task line from runlist
     line=`sed -n "${tnum},${tnum}p" "$DATAROOT/runlist.$ID"`
-    let "tnum += 1"
 
     # remove preceding spaces
     line=$(chomp "$line")
