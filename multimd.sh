@@ -788,7 +788,7 @@ echo
 echo -e "${C_YELLOW}$((NUMTASKS - NUMERRORS))/$NUMTASKS${C_NC} commands prepared successfully. Command that will be run:"
 echo -e "${C_GREEN}$CMD${C_NC}"
 echo
-echo -n -e "Press ${C_YELLOW}<ENTER>${C_NC} to perform run or ${C_YELLOW}<Ctrl+C>${C_NC} to exit"
+echo -n -e "Press ${C_RED}<ENTER>${C_NC} to perform run or ${C_RED}<Ctrl+C>${C_NC} to exit"
 
 read
 
@@ -803,7 +803,7 @@ SLURMID=`$CMD | grep 'Submitted batch job' | awk '{print $NF}'`
 
 if [[ -n "$SLURMID" ]]
 then
-    echo -e "Job submitted successfully. SLURM job ID is ${C_YELLOW}[$SLURMID]${C_NC}"
+    echo -e "Job submitted successfully. SLURM job ID is ${C_RED}[$SLURMID]${C_NC}"
 else
     echo -e "${C_RED}ERROR:${C_NC} something wrong with job queueing! Check SLURM output. Exiting" >&2
     exit $E_RUN_FAIL
