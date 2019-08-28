@@ -1,13 +1,22 @@
 #!/usr/bin/bash
 
 
+# script directory
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+
+
+# global functions
+source "$SCRIPTDIR/global.sh"
+
+
 # print header
-echo "+------------------------------------+"
-echo "|                                    |"
-echo "| Lomonosov-2 AMBER runscript v0.4.2 |"
-echo "|      Written by Viktor Drobot      |"
-echo "|                                    |"
-echo "+------------------------------------+"
+print_header $L2_PRINT_LOG "Lomonosov-2 AMBER runscript v$L2_MMD_VER" "Written by Viktor Drobot"
+#echo "+------------------------------------+"
+#echo "|                                    |"
+#echo "| Lomonosov-2 AMBER runscript v0.4.2 |"
+#echo "|      Written by Viktor Drobot      |"
+#echo "|                                    |"
+#echo "+------------------------------------+"
 echo
 echo
 

@@ -16,19 +16,8 @@ E_RUN_FAIL=8
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 
 
-### coloring support
-source "$SCRIPTDIR/colors.sh"
-
-
-# print header
-echo -e "${C_BLUE}+----------------------------------+${C_NC}"
-echo -e "${C_BLUE}|                                  |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper v0.4.2 ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|     ${C_YELLOW}Written by Viktor Drobot     ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|                                  |${C_NC}"
-echo -e "${C_BLUE}+----------------------------------+${C_NC}"
-echo
-echo
+### global functions
+source "$SCRIPTDIR/global.sh"
 
 
 # perform some checks
@@ -44,11 +33,20 @@ then
     exit $E_OLD_BASH
 fi
 
+
+# print header
+print_header $L2_PRINT_INT "Lomonosov-2 batch wrapper v$L2_MMD_VER" "Written by Viktor Drobot"
+echo
+echo
+
+
+# check for SLURM availability
 if ! command -v sbatch > /dev/null 2>&1
 then
     echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
     exit $E_NO_SLURM;
 fi
+
 
 # usage help
 if [[ "$#" -ne 2 ]]

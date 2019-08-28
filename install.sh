@@ -12,30 +12,19 @@ E_ERR_INST=4
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 
 
-### coloring support
-source "$SCRIPTDIR/colors.sh"
+### global functions
+source "$SCRIPTDIR/global.sh"
 
 
 ### default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="colors.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
+FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
 
 
 ### main script starts here
 
 
-# print header
-echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"
-echo -e "${C_BLUE}|                                                      |${C_NC}"
-echo -e "${C_BLUE}| ${C_YELLOW}Lomonosov-2 batch wrapper installation script v0.4.2 ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|               ${C_YELLOW}Written by Viktor Drobot               ${C_BLUE}|${C_NC}"
-echo -e "${C_BLUE}|                                                      |${C_NC}"
-echo -e "${C_BLUE}+------------------------------------------------------+${C_NC}"
-echo
-echo
-
-
-# some checks
+# perform some checks
 if [ -z "$BASH_VERSION" ]
 then
     echo -e "${C_RED}ERROR:${C_NC} this script support only BASH interpreter! Exiting" >&2
@@ -47,6 +36,12 @@ then
     echo -e "${C_RED}ERROR:${C_NC} this script needs BASH 4.0 or greater! Your current version is $BASH_VERSION. Exiting" >&2
     exit $E_OLD_BASH
 fi
+
+
+# print header
+print_header $L2_PRINT_INT "Lomonosov-2 batch wrapper installation script v$L2_MMD_VER" "Written by Viktor Drobot"
+echo
+echo
 
 
 # print installation path and check our distrib for consistency
