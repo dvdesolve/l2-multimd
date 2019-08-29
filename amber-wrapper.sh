@@ -1,27 +1,6 @@
 #!/usr/bin/bash
 
 
-# script directory
-#SCRIPTDIR=$(scontrol show job ${SLURM_JOBID} | awk -F= '/Command=/{print $2}') # for slurm
-#SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )" # for pure bash
-
-
-# global functions
-#source "$SCRIPTDIR/global.sh"
-
-
-# print header
-#print_header $L2_PRINT_LOG "Lomonosov-2 AMBER runscript v$L2_MMD_VER" "Written by Viktor Drobot"
-echo "+-----------------------------+"
-echo "|                             |"
-echo "| Lomonosov-2 AMBER runscript |"
-echo "|  Written by Viktor Drobot   |"
-echo "|                             |"
-echo "+-----------------------------+"
-echo
-echo
-
-
 # remove preceding spaces from the string
 chomp () {
     echo "$1" | sed -e 's/^[ \t]*//'
@@ -38,6 +17,37 @@ binname() {
 }
 
 
+# get unique job ID, run time limit and data root directory provided by multimd.sh script
+ID="$1"
+RUNTIME="$2"
+PARTITION="$3"
+NUMTASKS="$4"
+SCRIPTDIR="$5"
+shift 5
+DATAROOT="$*"
+
+
+# script directory - old way to get it
+#SCRIPTDIR=$(scontrol show job ${SLURM_JOBID} | awk -F= '/Command=/{print $2}') # for slurm
+#SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )" # for pure bash
+
+
+# global functions
+source "$SCRIPTDIR/global.sh"
+
+
+# print header
+print_header $L2_PRINT_LOG "Lomonosov-2 AMBER runscript v$L2_MMD_VER" "Written by Viktor Drobot"
+#echo "+-----------------------------+"
+#echo "|                             |"
+#echo "| Lomonosov-2 AMBER runscript |"
+#echo "|  Written by Viktor Drobot   |"
+#echo "|                             |"
+#echo "+-----------------------------+"
+echo
+echo
+
+
 # set correct temporary directory
 if [[ -z "$TMPDIR" ]]
 then
@@ -50,17 +60,8 @@ HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
 srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > $HOSTFILE || { rm -f $HOSTFILE; exit 255; }
 
 # ...and re-count them
-declare -i TOTALNODES
-TOTALNODES=`cat "$HOSTFILE" | wc -l`
-
-
-# get unique job ID, run time limit and data root directory provided by multimd.sh script
-ID="$1"
-RUNTIME="$2"
-PARTITION="$3"
-NUMTASKS="$4"
-shift 4
-DATAROOT="$*"
+#declare -i TOTALNODES
+#TOTALNODES=`cat "$HOSTFILE" | wc -l`
 
 
 # print short summary
@@ -68,7 +69,7 @@ echo "ID is [$ID]"
 echo "Run time limit is [$RUNTIME]"
 echo "Working partition is [$PARTITION]"
 echo "Data root directory is [$DATAROOT]"
-echo "Allocated [$TOTALNODES] nodes"
+echo "Allocated [$SLURM_JOB_NUM_NODES] nodes"
 echo
 echo
 

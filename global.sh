@@ -7,6 +7,10 @@ C_PURPLE='\033[1;35m'
 C_NC='\033[0m'
 
 
+### l2-multimd install root
+L2_ROOT=/home/linux776_2091/_scratch/opt/l2-multimd
+
+
 ### version string
 L2_MMD_VER=0.4.3
 
