@@ -758,7 +758,7 @@ fi
 CMD="sbatch -N ${TOTALNODES} -p ${PARTITION} -t ${RUNTIME} ${WRAPPER} ${JOBID} ${RUNTIME} ${PARTITION} $((NUMTASKS - NUMERRORS)) \"${L2_ROOT}\" \"${DATAROOT}\""
 
 
-# give user the last chance to check for errors
+# give user the last chance to check for possible errors
 echo
 echo
 echo -e "${C_YELLOW}$((NUMTASKS - NUMERRORS))/${NUMTASKS}${C_NC} commands prepared successfully. Command that will be run:"
@@ -779,7 +779,7 @@ SLURMID=`${CMD} | grep 'Submitted batch job' | awk '{print $NF}'`
 
 if [[ -n "${SLURMID}" ]]
 then
-    echo -e "Job submitted successfully. SLURM job ID is ${C_RED}[${SLURMID}]${C_NC}"
+    echo -e "Job submitted successfully. SLURM job ID is ${C_GREEN}[${SLURMID}]${C_NC}"
 else
     echo -e "${C_RED}ERROR:${C_NC} something wrong with job queueing! Check SLURM output. Exiting" >&2
     exit ${E_MMD_RUN_FAIL}

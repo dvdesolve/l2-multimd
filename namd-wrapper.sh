@@ -51,11 +51,6 @@ srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > ${HOSTFILE} || { r
 
 # print short summary
 print_summary ${ID} ${RUNTIME} ${PARTITION} "${DATAROOT}" ${SLURM_JOB_NUM_NODES}
-#echo "ID is [${ID}]"
-#echo "Run time limit is [${RUNTIME}]"
-#echo "Working partition is [${PARTITION}]"
-#echo "Data root directory is [${DATAROOT}]"
-#echo "Allocated [${SLURM_JOB_NUM_NODES}] nodes"
 echo
 echo
 

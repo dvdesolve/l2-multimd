@@ -51,11 +51,6 @@ srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > ${HOSTFILE} ||
 
 # print short summary
 print_summary ${ID} ${RUNTIME} ${PARTITION} "${DATAROOT}" ${SLURM_JOB_NUM_NODES}
-#echo "ID is [${ID}]"
-#echo "Run time limit is [${RUNTIME}]"
-#echo "Working partition is [${PARTITION}]"
-#echo "Data root directory is [${DATAROOT}]"
-#echo "Allocated [${SLURM_JOB_NUM_NODES}] nodes"
 echo
 echo
 
@@ -139,7 +134,7 @@ do
 done
 
 
-# just wait for all MPI instances are done
+# just wait for all MPI/srun instances are done
 wait
 
 
