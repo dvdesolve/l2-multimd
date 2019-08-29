@@ -8,7 +8,7 @@ C_NC='\033[0m'
 
 
 ### l2-multimd install root
-L2_ROOT=/home/linux776_2091/_scratch/opt/l2-multimd
+L2_ROOT=
 
 
 ### version string

@@ -13,7 +13,7 @@ E_RUN_FAIL=8
 
 
 ### script directory
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
@@ -607,6 +607,7 @@ echo -e "We will use ${C_YELLOW}[$PARTITION]${C_NC} partition to run our tasks"
 echo -e "One task will consume ${C_YELLOW}[$NUMNODES]${C_NC} nodes by default"
 echo -e "Default executable is ${C_YELLOW}[$BIN]${C_NC}"
 echo -e "Will run ${C_YELLOW}[$NUMTASKS]${C_NC} tasks"
+echo -e "Internal job ID is ${C_YELLOW}[$JOBID]${C_NC}"
 echo
 echo
 
@@ -779,6 +780,7 @@ then
     WRAPPER="$NAMDTASK"
 fi
 
+# we should enclose paths in quotes to protect ourself from space-containing parameters
 CMD="sbatch -N $TOTALNODES -p $PARTITION -t $RUNTIME $WRAPPER $JOBID $RUNTIME $PARTITION $((NUMTASKS - NUMERRORS)) \"$L2_ROOT\" \"$DATAROOT\""
 
 

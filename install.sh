@@ -9,7 +9,7 @@ E_ERR_INST=4
 
 
 ### script directory
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
@@ -103,6 +103,10 @@ do
         exit $E_ERR_INST
     fi
 done
+
+
+# store info about install root
+sed -i "s/L2_ROOT=/L2_ROOT=$INSTALLPATH/g" "$INSTALLPATH/global.sh"
 
 
 echo

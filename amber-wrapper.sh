@@ -33,7 +33,6 @@ DATAROOT="$*"
 
 # script directory - old way to get it
 #SCRIPTDIR=$(scontrol show job ${SLURM_JOBID} | awk -F= '/Command=/{print $2}') # for slurm
-#SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )" # for pure bash
 
 
 # global functions
@@ -42,12 +41,6 @@ source "$SCRIPTDIR/global.sh"
 
 # print header
 print_header $L2_PRINT_LOG "Lomonosov-2 AMBER runscript v$L2_MMD_VER" "Written by Viktor Drobot"
-#echo "+-----------------------------+"
-#echo "|                             |"
-#echo "| Lomonosov-2 AMBER runscript |"
-#echo "|  Written by Viktor Drobot   |"
-#echo "|                             |"
-#echo "+-----------------------------+"
 echo
 echo
 
@@ -59,13 +52,9 @@ then
 fi
 
 
-# get list of allocated nodes...
+# get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
 srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > $HOSTFILE || { rm -f $HOSTFILE; exit 255; }
-
-# ...and re-count them
-#declare -i TOTALNODES
-#TOTALNODES=`cat "$HOSTFILE" | wc -l`
 
 
 # print short summary
