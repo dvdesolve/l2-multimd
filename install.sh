@@ -2,10 +2,7 @@
 
 
 ### error codes
-E_NOTABASH=1
-E_OLD_BASH=2
-E_NO_FILES=3
-E_ERR_INST=4
+E_SCRIPT=255
 
 
 ### script directory
@@ -13,7 +10,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh"
+source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 ### default settings
@@ -21,27 +18,17 @@ INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
 FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
 
 
-### main script starts here
-
-
 # perform some checks
-if [ -z "${BASH_VERSION}" ]
-then
-    echo -e "${C_RED}ERROR:${C_NC} this script support only BASH interpreter! Exiting" >&2
-    exit ${E_NOTABASH}
-fi
-
-if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
-then
-    echo -e "${C_RED}ERROR:${C_NC} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
-    exit ${E_OLD_BASH}
-fi
+check_bash ${L2_PRINT_INT}
 
 
 # print header
 print_header ${L2_PRINT_INT} "Lomonosov-2 batch wrapper installation script v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
+
+
+### main script starts here
 
 
 # print installation path and check our distrib for consistency
@@ -55,7 +42,7 @@ do
     if [[ ! -e "${srcf}" ]]
     then
         echo -e "${C_RED}ERROR:${C_NC} file ${C_YELLOW}[${f}]${C_NC} wasn't found in source tree. Exiting" >&2
-        exit ${E_NO_FILES}
+        exit ${E_INST_NO_FILES}
     fi
 done
 
@@ -65,14 +52,18 @@ echo
 if [[ ! -d "${INSTALLPATH}" ]]
 then
     echo -e "${C_PURPLE}INFO:${C_NC} doing a fresh install"
-    mkdir -p "${INSTALLPATH}"
 else
-    echo -n -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten. Press ${C_RED}<ENTER>${C_NC} to continue or ${C_RED}<Ctrl+C>${C_NC} to exit"
-    read
+    echo -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten"
 fi
+
+echo
+echo -e -n "Press ${C_RED}<ENTER>${C_NC} to continue or ${C_RED}<Ctrl+C>${C_NC} to exit"
+read
 
 
 # perform installation
+mkdir -p "${INSTALLPATH}"
+
 for f in ${FILELIST}
 do
     srcf="${SCRIPTDIR}/${f}"
@@ -100,7 +91,7 @@ do
         echo -e "${C_GREEN}ok${POSTFIX}${C_NC}"
     else
         echo -e "${C_RED}fail${C_NC}"
-        exit ${E_ERR_INST}
+        exit ${E_INST_ERR_IO}
     fi
 done
 

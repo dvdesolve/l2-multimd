@@ -2,14 +2,7 @@
 
 
 ### error codes
-E_NOTABASH=1
-E_OLD_BASH=2
-E_POS_ARGS=3
-E_UNK_ENGN=4
-E_INV_CONF=5
-E_INV_TASK=6
-E_NO_SLURM=7
-E_RUN_FAIL=8
+E_SCRIPT=255
 
 
 ### script directory
@@ -17,21 +10,11 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh"
+source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 # perform some checks
-if [ -z "${BASH_VERSION}" ]
-then
-    echo -e "${C_RED}ERROR:${C_NC} this script support only BASH interpreter! Exiting" >&2
-    exit ${E_NOTABASH}
-fi
-
-if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
-then
-    echo -e "${C_RED}ERROR:${C_NC} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
-    exit ${E_OLD_BASH}
-fi
+check_bash ${L2_PRINT_INT}
 
 
 # print header
@@ -44,7 +27,7 @@ echo
 if ! command -v sbatch > /dev/null 2>&1
 then
     echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
-    exit ${E_NO_SLURM};
+    exit ${E_MMD_NO_SLURM};
 fi
 
 
@@ -52,7 +35,7 @@ fi
 if [[ "$#" -ne 2 ]]
 then
     echo "Usage: $0 engine taskfile"
-    exit ${E_POS_ARGS}
+    exit ${E_MMD_POS_ARGS}
 fi
 
 
@@ -109,12 +92,6 @@ declare -a T_AMB_CPRESTRTS
 declare -a T_AMB_GROUPFILES
 declare -a T_AMB_NGS
 declare -a T_AMB_REMS
-
-
-### remove preceding spaces from the string
-chomp () {
-    echo "$1" | sed -e 's/^[ \t]*//'
-}
 
 
 ### parse TASK keyword
@@ -178,7 +155,7 @@ task () {
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                    exit ${E_INV_TASK}
+                    exit ${E_MMD_INV_TASK}
                 fi
 
                 T_NODES[${idx}]="$2"
@@ -189,7 +166,7 @@ task () {
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                    exit ${E_INV_TASK}
+                    exit ${E_MMD_INV_TASK}
                 fi
 
                 T_BINS[${idx}]="$2"
@@ -200,7 +177,7 @@ task () {
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                    exit ${E_INV_TASK}
+                    exit ${E_MMD_INV_TASK}
                 fi
 
                 T_CONFIGS[${idx}]="$2"
@@ -211,7 +188,7 @@ task () {
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                    exit ${E_INV_TASK}
+                    exit ${E_MMD_INV_TASK}
                 fi
 
                 T_OUTPUTS[${idx}]="$2"
@@ -224,7 +201,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_PRMTOPS[${idx}]="$2"
@@ -241,7 +218,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_COORDS[${idx}]="$2"
@@ -258,7 +235,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_RESTARTS[${idx}]="$2"
@@ -275,7 +252,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_REFCS[${idx}]="$2"
@@ -292,7 +269,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_TRAJS[${idx}]="$2"
@@ -309,7 +286,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_VELS[${idx}]="$2"
@@ -326,7 +303,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_INFOS[${idx}]="$2"
@@ -343,7 +320,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPINS[${idx}]="$2"
@@ -360,7 +337,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPOUTS[${idx}]="$2"
@@ -377,7 +354,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPRESTRTS[${idx}]="$2"
@@ -394,7 +371,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_GROUPFILES[${idx}]="$2"
@@ -411,7 +388,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_NGS[${idx}]="$2"
@@ -428,7 +405,7 @@ task () {
                     if [[ "$#" -lt 2 ]]
                     then
                         echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
-                        exit ${E_INV_TASK}
+                        exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_REMS[${idx}]="$2"
@@ -454,7 +431,7 @@ task () {
                 if [[ "${T_NODES[${idx}]}" -gt 1 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} could be only run on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
-                    exit ${E_INV_TASK}
+                    exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
         esac
@@ -477,7 +454,7 @@ case "${1^^}" in
 
     *)
         echo -e "${C_RED}ERROR:${C_NC} unsupported engine ${C_YELLOW}[$1]${C_NC} is given! Exiting" >&2
-        exit ${E_UNK_ENGN}
+        exit ${E_MMD_UNK_ENGN}
         ;;
 esac
 
@@ -494,7 +471,7 @@ task_idx=0
 
 
 # process given taskfile
-# TODO may be the same behaviour as in wrapper scripts
+# TODO reading the whole file into while loop may cause sync errors depending on filesystem
 while IFS='' read -r line || [[ -n "${line}" ]]; do
     # prepare line for parsing
     let lineno++
@@ -581,7 +558,7 @@ NUMTASKS="${task_idx}"
 if [[ -z "${DATAROOT}" || -z "${AMBERROOT}${NAMDROOT}" || -z "${RUNTIME}" || -z "${PARTITION}" || "${NUMTASKS}" -eq 0 ]]
 then
     echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting" >&2
-    exit ${E_INV_CONF}
+    exit ${E_MMD_INV_CONF}
 fi
 
 
@@ -805,7 +782,7 @@ then
     echo -e "Job submitted successfully. SLURM job ID is ${C_RED}[${SLURMID}]${C_NC}"
 else
     echo -e "${C_RED}ERROR:${C_NC} something wrong with job queueing! Check SLURM output. Exiting" >&2
-    exit ${E_RUN_FAIL}
+    exit ${E_MMD_RUN_FAIL}
 fi
 
 

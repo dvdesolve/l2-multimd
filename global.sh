@@ -1,3 +1,20 @@
+### error codes
+E_NOTABASH=1
+E_OLD_BASH=2
+E_HOSTFILE=3
+
+E_INST_NO_FILES=3
+E_INST_ERR_IO=4
+
+
+E_MMD_NO_SLURM=3
+E_MMD_POS_ARGS=4
+E_MMD_UNK_ENGN=5
+E_MMD_INV_CONF=6
+E_MMD_INV_TASK=7
+E_MMD_RUN_FAIL=8
+
+
 ### color codes
 C_RED='\033[1;31m'
 C_GREEN='\033[1;32m'
@@ -7,7 +24,7 @@ C_PURPLE='\033[1;35m'
 C_NC='\033[0m'
 
 
-### l2-multimd install root
+### l2-multimd install root (empty by default)
 L2_ROOT=
 
 
@@ -18,6 +35,51 @@ L2_MMD_VER=0.4.3
 ### printout modes
 L2_PRINT_INT=0 # interactive - with coloring support
 L2_PRINT_LOG=1 # logging - plain text
+
+
+### check bash presence and version
+check_bash() {
+    # determine mode - interactive or logging
+    declare -i mode
+    mode="$1"
+
+    local clr_red="${C_RED}"
+    local clr_nc="${C_NC}"
+
+    if [[ "${mode}" -eq "${L2_PRINT_LOG}" ]]
+    then
+        clr_red=''
+        clr_nc=''
+    fi
+
+    if [ -z "${BASH_VERSION}" ]
+    then
+        echo -e "${clr_red}ERROR:${clr_nc} this script support only BASH interpreter! Exiting" >&2
+        exit ${E_NOTABASH}
+    fi
+
+    if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
+    then
+        echo -e "${clr_red}ERROR:${clr_nc} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
+        exit ${E_OLD_BASH}
+    fi
+}
+
+
+### remove preceding spaces from the string
+chomp () {
+    echo "$1" | sed -e 's/^[ \t]*//'
+}
+
+
+### extract executable file name from command string
+binname() {
+    declare -a p
+    eval p=($@)
+    set -- "${p[@]}"
+
+    echo `basename "$1"`
+}
 
 
 ### print header in out files
@@ -112,4 +174,14 @@ print_header () {
     then
         printf "${C_NC}"
     fi
+}
+
+
+### print job summary in wrapper scripts
+print_summary() {
+    echo "ID is [$1]"
+    echo "Run time limit is [$2]"
+    echo "Working partition is [$3]"
+    echo "Data root directory is [$4]"
+    echo "Allocated [$5] nodes"
 }

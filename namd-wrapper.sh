@@ -1,13 +1,11 @@
 #!/usr/bin/bash
 
 
-# remove preceding spaces from the string
-chomp () {
-    echo "$1" | sed -e 's/^[ \t]*//'
-}
+### error codes
+E_SCRIPT=255
 
 
-# get unique job ID, run time limit and data root directory provided by multimd.sh script
+### get unique job ID, run time limit and data root directory provided by multimd.sh script
 declare -a p
 eval p=($@)
 set -- "${p[@]}"
@@ -18,15 +16,19 @@ PARTITION="$3"
 NUMTASKS="$4"
 SCRIPTDIR="$5"
 shift 5
-DATAROOT="$*"
+DATAROOT="$@"
 
 
-# script directory - old way to get it
+### script directory - old way to get it
 #SCRIPTDIR=$(scontrol show job ${SLURM_JOBID} | awk -F= '/Command=/{print $2}') # for slurm
 
 
-# global functions
-source "${SCRIPTDIR}/global.sh"
+### global functions
+source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+
+
+# perform some checks
+check_bash ${L2_PRINT_LOG}
 
 
 # print header
@@ -44,15 +46,16 @@ fi
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit 255; }
+srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit ${E_HOSTFILE}; }
 
 
 # print short summary
-echo "ID is [${ID}]"
-echo "Run time limit is [${RUNTIME}]"
-echo "Working partition is [${PARTITION}]"
-echo "Data root directory is [${DATAROOT}]"
-echo "Allocated [${SLURM_JOB_NUM_NODES}] nodes"
+print_summary ${ID} ${RUNTIME} ${PARTITION} "${DATAROOT}" ${SLURM_JOB_NUM_NODES}
+#echo "ID is [${ID}]"
+#echo "Run time limit is [${RUNTIME}]"
+#echo "Working partition is [${PARTITION}]"
+#echo "Data root directory is [${DATAROOT}]"
+#echo "Allocated [${SLURM_JOB_NUM_NODES}] nodes"
 echo
 echo
 
@@ -115,7 +118,7 @@ do
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p ${NUMTHREADS} ++nodelist ${DATADIR}/nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND} &
+    eval charmrun ++p ${NUMTHREADS} ++nodelist nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND} &
 done
 
 
