@@ -67,7 +67,7 @@ then
     echo -e "${C_PURPLE}INFO:${C_NC} doing a fresh install"
     mkdir -p "$INSTALLPATH"
 else
-    echo -n -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten. Press ${C_YELLOW}<ENTER>${C_NC} to continue or ${C_YELLOW}<Ctrl+C>${C_NC} to exit"
+    echo -n -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten. Press ${C_RED}<ENTER>${C_NC} to continue or ${C_RED}<Ctrl+C>${C_NC} to exit"
     read
 fi
 

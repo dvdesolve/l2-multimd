@@ -18,6 +18,10 @@ binname() {
 
 
 # get unique job ID, run time limit and data root directory provided by multimd.sh script
+declare -a p
+eval p=($@)
+set -- "${p[@]}"
+
 ID="$1"
 RUNTIME="$2"
 PARTITION="$3"
