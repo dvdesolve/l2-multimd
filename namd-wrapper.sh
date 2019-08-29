@@ -26,17 +26,17 @@ DATAROOT="$*"
 
 
 # global functions
-source "$SCRIPTDIR/global.sh"
+source "${SCRIPTDIR}/global.sh"
 
 
 # print header
-print_header $L2_PRINT_LOG "Lomonosov-2 NAMD runscript v$L2_MMD_VER" "Written by Viktor Drobot"
+print_header ${L2_PRINT_LOG} "Lomonosov-2 NAMD runscript v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
 
 
 # set correct temporary directory
-if [[ -z "$TMPDIR" ]]
+if [[ -z "${TMPDIR}" ]]
 then
     TMPDIR=/tmp
 fi
@@ -44,15 +44,15 @@ fi
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > $HOSTFILE || { rm -f $HOSTFILE; exit 255; }
+srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit 255; }
 
 
 # print short summary
-echo "ID is [$ID]"
-echo "Run time limit is [$RUNTIME]"
-echo "Working partition is [$PARTITION]"
-echo "Data root directory is [$DATAROOT]"
-echo "Allocated [$SLURM_JOB_NUM_NODES] nodes"
+echo "ID is [${ID}]"
+echo "Run time limit is [${RUNTIME}]"
+echo "Working partition is [${PARTITION}]"
+echo "Data root directory is [${DATAROOT}]"
+echo "Allocated [${SLURM_JOB_NUM_NODES}] nodes"
 echo
 echo
 
@@ -83,39 +83,39 @@ declare -i tnum
 for ((tnum=1; tnum <= NUMTASKS; tnum++))
 do
     # read task line from runlist
-    line=`sed -n "${tnum},${tnum}p" "$DATAROOT/runlist.$ID"`
+    line=`sed -n "${tnum},${tnum}p" "${DATAROOT}/runlist.${ID}"`
 
     # remove preceding spaces
-    line=$(chomp "$line")
+    line=$(chomp "${line}")
 
     # get nodes and prepare nodelist file for charmrun
-    DATADIR=$(chomp "`echo "$line" | awk '{$1 = ""; print $0}'`")
-    cd "$DATADIR"
+    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; print $0}'`")
+    cd "${DATADIR}"
 
-    echo "group main" > nodelist.$ID
+    echo "group main" > nodelist.${ID}
 
-    NUMNODES=`echo "$line" | awk '{print $1}'`
-    NODELIST=`sed -n "$node,$((node + NUMNODES - 1))p" "$HOSTFILE"`
+    NUMNODES=`echo "${line}" | awk '{print $1}'`
+    NODELIST=`sed -n "${node},$((node + NUMNODES - 1))p" "${HOSTFILE}"`
     let "node += NUMNODES"
 
-    echo "$NODELIST" >> nodelist.$ID
+    echo "${NODELIST}" >> nodelist.${ID}
 
     # calculate threads count
     declare -i NUMTHREADS
     let "NUMTHREADS = NUMCORES * NUMNODES"
 
     # get command to run and proper config file
-    COMMAND=`cat "runcmd.$ID"`
+    COMMAND=`cat "runcmd.${ID}"`
 
     # short summary for current task
-    echo "Data directory is [$DATADIR]"
+    echo "Data directory is [${DATADIR}]"
     echo "Allocated nodes are:"
-    cat nodelist.$ID | sed -n '1!p' | awk '{print $2}'
-    echo "Command to run is [$COMMAND]"
+    cat nodelist.${ID} | sed -n '1!p' | awk '{print $2}'
+    echo "Command to run is [${COMMAND}]"
     echo
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p $NUMTHREADS ++nodelist $DATADIR/nodelist.$ID ++ppn $NUMCORES ++runscript $COMMAND &
+    eval charmrun ++p ${NUMTHREADS} ++nodelist ${DATADIR}/nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND} &
 done
 
 
@@ -124,7 +124,7 @@ wait
 
 
 # cleanup global temporary directory
-rm -f $HOSTFILE
+rm -f ${HOSTFILE}
 
 
 # we're done here

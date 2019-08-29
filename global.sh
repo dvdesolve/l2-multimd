@@ -43,9 +43,9 @@ print_header () {
 
     for var in "$@"
     do
-        if [[ "${#var}" -gt "$l_max" ]]
+        if [[ "${#var}" -gt "${l_max}" ]]
         then
-            i_max=$idx
+            i_max=${idx}
             l_max=${#var}
         fi
 
@@ -54,7 +54,7 @@ print_header () {
     done
 
     # print upper part of header
-    if [[ "$mode" -eq "$L2_PRINT_INT" ]]
+    if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
     then
         printf "${C_BLUE}"
     fi
@@ -75,23 +75,23 @@ print_header () {
         local l_l=$(( (l_max + 2 - l_i) / 2 ))
         local l_r=$(( l_max + 2 - l_i - l_l ))
 
-        if [[ "$mode" -eq "$L2_PRINT_INT" ]]
+        if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
         then
             printf "${C_BLUE}"
         fi
 
         printf "|"
-        printf " %.0s" `seq 1 $l_l`
+        printf " %.0s" `seq 1 ${l_l}`
 
-        if [[ "$mode" -eq "$L2_PRINT_INT" ]]
+        if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
         then
             printf "${C_YELLOW}"
         fi
 
-        printf "%s" "$var"
-        printf " %.0s" `seq 1 $l_r`
+        printf "%s" "${var}"
+        printf " %.0s" `seq 1 ${l_r}`
 
-        if [[ "$mode" -eq "$L2_PRINT_INT" ]]
+        if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
         then
             printf "${C_BLUE}"
         fi
@@ -108,7 +108,7 @@ print_header () {
     printf -- "-%.0s" `seq 1 $((l_max + 2))`
     printf "+\n"
 
-    if [[ "$mode" -eq "$L2_PRINT_INT" ]]
+    if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
     then
         printf "${C_NC}"
     fi
