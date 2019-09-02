@@ -40,13 +40,13 @@ echo
 # set correct temporary directory
 if [[ -z "${TMPDIR}" ]]
 then
-    TMPDIR=/tmp
+    TMPDIR="/tmp"
 fi
 
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit ${E_HOSTFILE}; }
+srun hostname -s | sort | uniq -c | awk '{print "host "$2}' > "${HOSTFILE}" || { rm -f "${HOSTFILE}"; exit ${E_HOSTFILE}; }
 
 
 # print short summary
@@ -112,8 +112,16 @@ do
     echo "Command to run is [${COMMAND}]"
     echo
 
+    # construct final run command depending on working partition
+    RUNCMD="charmrun ++p ${NUMTHREADS} ++nodelist nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND}"
+
+    if [[ "${PARTITION,,}" == "pascal" ]]
+    then
+        RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; ${RUNCMD}"
+    fi
+
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval charmrun ++p ${NUMTHREADS} ++nodelist nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND} &
+    eval ${RUNCMD} &
 done
 
 
@@ -122,7 +130,7 @@ wait
 
 
 # cleanup global temporary directory
-rm -f ${HOSTFILE}
+rm -f "${HOSTFILE}"
 
 
 # we're done here

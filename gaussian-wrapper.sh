@@ -40,13 +40,13 @@ echo
 # set correct temporary directory
 if [[ -z "${TMPDIR}" ]]
 then
-    TMPDIR=/tmp
+    TMPDIR="/tmp"
 fi
 
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print $2}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit ${E_HOSTFILE}; }
+srun hostname -s | sort | uniq -c | awk '{print $2}' > "${HOSTFILE}" || { rm -f "${HOSTFILE}"; exit ${E_HOSTFILE}; }
 
 
 # print short summary
@@ -95,7 +95,7 @@ wait
 
 
 # cleanup global temporary directory
-rm -f ${HOSTFILE}
+rm -f "${HOSTFILE}"
 
 
 # we're done here

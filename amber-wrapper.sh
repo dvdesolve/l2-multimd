@@ -40,13 +40,13 @@ echo
 # set correct temporary directory
 if [[ -z "${TMPDIR}" ]]
 then
-    TMPDIR=/tmp
+    TMPDIR="/tmp"
 fi
 
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > ${HOSTFILE} || { rm -f ${HOSTFILE}; exit ${E_HOSTFILE}; }
+srun hostname -s | sort | uniq -c | awk '{print $2" slots="$1}' > "${HOSTFILE}" || { rm -f "${HOSTFILE}"; exit ${E_HOSTFILE}; }
 
 
 # print short summary
@@ -106,8 +106,8 @@ do
     echo "Command to run is [${COMMAND}]"
     echo
 
-    # construct final run command depending on executable filename
-    RUNCMD=''
+    # construct final run command depending on executable filename and working partition
+    RUNCMD=""
 
     case $(binname "${COMMAND}") in
         sander|pmemd|pmemd.cuda)
@@ -121,11 +121,13 @@ do
             ;;
 
         pmemd.cuda.MPI)
-            RUNCMD="mpirun --hostfile hostfile.${ID} --npernode 1 --nooversubscribe ${COMMAND}"
-            ;;
-
-        *)
-            RUNCMD="mpirun --hostfile hostfile.${ID} ${COMMAND}"
+            if [[ "${PARTITION,,}" == "pascal" ]]
+            then
+                sed -i "s/slots=1/slots=2/g" hostfile.${ID}
+                RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; mpirun --hostfile hostfile.${ID} --npernode 2 --nooversubscribe ${COMMAND}"
+            else
+                RUNCMD="mpirun --hostfile hostfile.${ID} --npernode 1 --nooversubscribe ${COMMAND}"
+            fi
             ;;
     esac
 
@@ -139,7 +141,7 @@ wait
 
 
 # cleanup global temporary directory
-rm -f ${HOSTFILE}
+rm -f "${HOSTFILE}"
 
 
 # we're done here
