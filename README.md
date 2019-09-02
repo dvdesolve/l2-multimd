@@ -11,7 +11,7 @@ You need `bash` interpreter of version 4.0 or higher
 Clone this repo (or download archive) and extract in your home folder on Lomonosov-2 cluster. Then run `install.sh` and it will install all needed files to the `~/_scratch/opt/l2-multimd`.
 
 ## Usage
-Load all needed modules and set environment variables if necessary. Don't forget about SLURM itself (script will remind you if no `sbatch` command is found)! Then copy all necessary folders and files for MD simulations inside `~/_scratch/...` directory. After that prepare the **TASKFILE** (see corresponding chapter below) and set directives properly. Finally, `cd` into your **DATAROOT** (see below), choose necessary engine and run `~/_scratch/opt/l2-multimd/multimd.sh engine TASKFILE`.
+Load all needed modules and set environment variables if necessary. Don't forget about SLURM itself (script will remind you if `sbatch` command isn't found)! Then copy all necessary folders and files for MD simulations somewhere to scratch filesystem. After that prepare the **TASKFILE** (see corresponding chapter below) and set necessary directives. Finally, `cd` into your **DATAROOT** (see below), choose necessary engine and run `~/_scratch/opt/l2-multimd/multimd.sh engine TASKFILE`.
 
 ## **TASKFILE** synopsis
 **TASKFILE** consists of pairs *DIRECTIVE params*. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Directive keywords are case-insensitive.
@@ -20,31 +20,38 @@ Here is the full list of supported directives (as of version 0.2.0):
 * **DATAROOT**
 * **AMBERROOT**
 * **NAMDROOT**
+* **GAUSSIANROOT**
 * **RUNTIME**
 * **PARTITION**
 * **NUMNODES**
 * **BIN**
 * **TASK**
 
-Some of the directives (**DATAROOT**, **AMBERROOT**/**NAMDROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown directives are ignored.
+Some of the directives (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown directives are ignored.
 
 #### **DATAROOT**
-This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. Value of the directive may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out inside `~/_scratch`!
+This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. Value of the directive may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out on scratch filesystem!
 
 Syntax:
 `DATAROOT /path/to/MD/root/dir`
 
 #### **AMBERROOT**
-This is the root directory where AMBER computational package is installed (`bin`, `lib` and other directories should sit here). Again, path may contain whitespaces but should be quoted. Also because of nature of Lomonosov-2 cluster AMBER should reside in `~/_scratch` too.
+This is the root directory where AMBER computational package is installed (`bin`, `lib` and other directories should sit here). Path may contain whitespaces but should be enclosed in quotes. Because of how Lomonosov-2 cluster works AMBER distrib should reside somewhere on scratch filesystem.
 
 Syntax:
-`AMBERROOT /path/to/AMBER/installation`
+`AMBERROOT /path/to/amber/installation`
 
 #### **NAMDROOT**
-This is the root directory where NAMD computational package is installed (`namd2`, `numd-runscript.sh` and other files should sit here). Again, path may contain whitespaces but should be quoted. Also because of nature of Lomonosov-2 cluster NAMD should reside in `~/_scratch` too.
+This is the root directory where NAMD computational package is installed (`namd2`, `numd-runscript.sh` and other files should sit here). Path may contain whitespaces but should be quoted. Because of how Lomonosov-2 cluster works NAMD distrib should reside on scratch filesystem too.
 
 Syntax:
-`NAMDROOT /path/to/NAMD/installation`
+`NAMDROOT /path/to/namd/installation`
+
+#### **GAUSSIANROOT**
+This is the root directory where Gaussian computational package is installed. `gVER` (where `gVER` should be the same as **BIN** directive, e. g. `g09` or `g16`), `gv` and (perhaps) other directories should sit here. Path may contain whitespaces but should be quoted. Because of the nature of Lomonosov-2 cluster Gaussian installation should reside on scratch filesystem. **Important:** only use that engine if you've licensed Gaussian installed!
+
+Syntax:
+`GAUSSIANROOT /path/to/gaussian/installation`
 
 #### **RUNTIME**
 Sets the runtime limit for the whole bunch of tasks. After that time SLURM will interrupt the job. Default value is `05:00`.
@@ -67,7 +74,7 @@ Syntax:
 `NUMNODES n`
 
 #### **BIN**
-This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`.
+This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`. **Important:** if you're using Gaussian engine then **GAUSSIANROOT** should contain directory which is named the same as **BIN** directive, for example: `g03`, `g09`, `g16`!
 
 Syntax:
 `BIN executable-name`

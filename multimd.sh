@@ -40,12 +40,17 @@ fi
 
 
 ### list of known keywords
-KEYWORDS="DATAROOT AMBERROOT NAMDROOT RUNTIME PARTITION NUMNODES BIN TASK"
+KEYWORDS="DATAROOT AMBERROOT NAMDROOT GAUSSIANROOT RUNTIME PARTITION NUMNODES BIN TASK"
 
 
-### supported engines
+### supported engines and their wrappers
 ENG_AMBER=1
 ENG_NAMD=2
+ENG_GAUSSIAN=3
+
+AMBERWRAPPER="${SCRIPTDIR}/amber-wrapper.sh"
+NAMDWRAPPER="${SCRIPTDIR}/namd-wrapper.sh"
+GAUSSIANWRAPPER="${SCRIPTDIR}/gaussian-wrapper.sh"
 
 
 ### some defaults
@@ -54,19 +59,17 @@ JOBID=$$
 declare -i ENGINE
 ENGINE=${ENG_AMBER}
 
-AMBERWRAPPER="${SCRIPTDIR}/amber-wrapper.sh"
-NAMDWRAPPER="${SCRIPTDIR}/namd-wrapper.sh"
+BIN="sander"
 
 DATAROOT=''
 AMBERROOT=''
 NAMDROOT=''
+GAUSSIANROOT=''
 RUNTIME='05:00'
 PARTITION='test'
 
 declare -i NUMNODES
 NUMNODES=1
-
-BIN="sander"
 
 declare -i NUMTASKS
 NUMTASKS=0
@@ -122,6 +125,9 @@ task () {
     elif [[ "${ENGINE}" -eq "${ENG_NAMD}" ]]
     then
         EXT='conf'
+    elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+    then
+        EXT='gin'
     fi
 
     T_CONFIGS[${idx}]="${T_BASENAMES[${idx}]}.${EXT}"
@@ -436,6 +442,20 @@ task () {
                 ;;
         esac
     fi
+
+    # check for consistency between executable and requested number of nodes for Gaussian engine
+    if [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+    then
+        case "${T_BINS[${idx}]}" in
+            g03|g09|g16)
+                if [[ "${T_NODES[${idx}]}" -gt 1 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} could be only run on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
+                    exit ${E_MMD_INV_TASK}
+                fi 
+                ;;
+        esac
+    fi
 }
 
 
@@ -450,6 +470,10 @@ case "${1^^}" in
 
     "NAMD")
         ENGINE=${ENG_NAMD}
+        ;;
+
+    "GAUSSIAN")
+        ENGINE=${ENG_GAUSSIAN}
         ;;
 
     *)
@@ -519,6 +543,15 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
             fi
             ;;
 
+        "GAUSSIANROOT")
+            if [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+            then
+                GAUSSIANROOT="${PARAMS}"
+            else
+                echo -e "${C_RED}WARNING:${C_NC} ignoring Gaussian-related keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+            fi
+            ;;
+
         "RUNTIME")
             RUNTIME=`echo "${PARAMS}" | awk '{print $1}'`
             ;;
@@ -555,9 +588,9 @@ NUMTASKS="${task_idx}"
 
 
 # check if something wrong with given taskfile, e. g. necessary keywords are omitted or no tasks to run
-if [[ -z "${DATAROOT}" || -z "${AMBERROOT}${NAMDROOT}" || -z "${RUNTIME}" || -z "${PARTITION}" || "${NUMTASKS}" -eq 0 ]]
+if [[ -z "${DATAROOT}" || -z "${AMBERROOT}${NAMDROOT}${GAUSSIANROOT}" || -z "${RUNTIME}" || -z "${PARTITION}" || "${NUMTASKS}" -eq 0 ]]
 then
-    echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting" >&2
+    echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT/GAUSSIANROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting" >&2
     exit ${E_MMD_INV_CONF}
 fi
 
@@ -574,6 +607,9 @@ then
 elif [[ "${ENGINE}" -eq "${ENG_NAMD}" ]]
 then
     echo -e "Will use NAMD engine. NAMD is installed into ${C_YELLOW}[${NAMDROOT}]${C_NC}"
+elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+then
+    echo -e "Will use Gaussian engine. Gaussian is installed into ${C_YELLOW}[${GAUSSIANROOT}]${C_NC}"
 fi
 
 echo -e "Time limit for the whole job is ${C_YELLOW}[${RUNTIME}]${C_NC}"
@@ -718,11 +754,9 @@ do
     elif [[ "${ENGINE}" -eq "${ENG_NAMD}" ]]
     then
         COMMAND="\"${NAMDROOT}/namd-runscript.sh\" \"${NAMDROOT}/${T_BINS[${task_idx}]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
-    fi
-
-    if [[ "${PARTITION,,}" == "pascal" ]]
+    elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
     then
-        COMMAND="CUDA_VISIBLE_DEVICES=0,1 ${COMMAND}"
+        COMMAND="\"${GAUSSIANROOT}/gaussian-runscript.sh\" \"${GAUSSIANROOT}/${T_BINS[${task_idx}]}/${T_BINS[${task_idx}]}\" < \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
     fi
 
     # ...and store it in appropriate place
@@ -752,6 +786,9 @@ then
 elif [[ "${ENGINE}" -eq "${ENG_NAMD}" ]]
 then
     WRAPPER="${NAMDWRAPPER}"
+elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+then
+    WRAPPER="${GAUSSIANWRAPPER}"
 fi
 
 # we should enclose paths in quotes to protect ourself from space-containing parameters
