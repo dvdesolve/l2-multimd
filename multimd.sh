@@ -756,7 +756,7 @@ do
         COMMAND="\"${NAMDROOT}/namd-runscript.sh\" \"${NAMDROOT}/${T_BINS[${task_idx}]}\" +isomalloc_sync +idlepoll \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
     elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
     then
-        COMMAND="\"${GAUSSIANROOT}/gaussian-runscript.sh\" \"${GAUSSIANROOT}/${T_BINS[${task_idx}]}/${T_BINS[${task_idx}]}\" < \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
+        COMMAND="\"${GAUSSIANROOT}/${T_BINS[${task_idx}]}/${T_BINS[${task_idx}]}\" < \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
     fi
 
     # ...and store it in appropriate place

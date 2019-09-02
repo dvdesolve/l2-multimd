@@ -15,7 +15,7 @@ source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exi
 
 ### default settings
 INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh LICENSE README.md"
+FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh gaussian-wrapper.sh LICENSE README.md"
 
 
 # perform some checks
