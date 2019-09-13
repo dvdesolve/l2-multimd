@@ -16,7 +16,7 @@ Load all needed modules and set environment variables if necessary. Don't forget
 ## **TASKFILE** synopsis
 **TASKFILE** consists of pairs *DIRECTIVE params*. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Directive keywords are case-insensitive.
 
-Here is the full list of supported directives (as of version 0.2.0):
+Here is the full list of supported directives (as of version 0.4.3):
 * **DATAROOT**
 * **AMBERROOT**
 * **NAMDROOT**
