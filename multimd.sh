@@ -764,6 +764,9 @@ do
 
     if [[ "$?" -eq 0 ]]
     then
+        # add number of nodes and data directory for that task to runlist
+        echo "${T_NODES[${task_idx}]} ${DATAROOT%/}/${T_DIRS[${task_idx}]}" >> "${RUNLIST}"
+
         echo -e "${C_GREEN}ok${C_NC}"
     else
         echo -e "${C_RED}fail${C_NC}"
@@ -771,9 +774,6 @@ do
     fi
 
     echo
-
-    # add number of nodes and data directory for that task to runlist
-    echo "${T_NODES[${task_idx}]} ${DATAROOT%/}/${T_DIRS[${task_idx}]}" >> "${RUNLIST}"
 done
 
 
@@ -798,7 +798,16 @@ CMD="sbatch -N ${TOTALNODES} -p ${PARTITION} -t ${RUNTIME} ${WRAPPER} ${JOBID} $
 # give user the last chance to check for possible errors
 echo
 echo
-echo -e "${C_YELLOW}$((NUMTASKS - NUMERRORS))/${NUMTASKS}${C_NC} commands prepared successfully. Command that will be run:"
+
+C_TMP_TYPE="${C_GREEN}"
+
+if [[ "$NUMERRORS" -gt 0 ]]
+then
+    echo -e "${C_RED}WARNING:${C_NC} there was some problems with ${C_YELLOW}${NUMERRORS}${C_NC} task(s). Please review job summary with extra attention!"
+    C_TMP_TYPE="${C_RED}"
+fi
+
+echo -e "${C_TMP_TYPE}$((NUMTASKS - NUMERRORS))/${NUMTASKS}${C_NC} commands have been prepared successfully. SLURM command that will be run:"
 echo -e "${C_GREEN}${CMD}${C_NC}"
 echo
 echo -n -e "Press ${C_RED}<ENTER>${C_NC} to perform run or ${C_RED}<Ctrl+C>${C_NC} to exit"
