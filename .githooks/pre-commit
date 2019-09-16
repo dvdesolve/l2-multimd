@@ -1,0 +1,8 @@
+#!/bin/sh
+
+md5sum `cat distfiles` > disthashes
+git add disthashes
+
+echo "Updated hash list"
+
+exit 0
