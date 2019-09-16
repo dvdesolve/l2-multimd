@@ -15,13 +15,13 @@ Clone this repo (or download archive) and extract in your home folder on Lomonos
 
 
 ## Usage
-Load all needed modules and set environment variables if necessary. Don't forget about SLURM itself (script will remind you if `sbatch` command isn't found)! Then copy all necessary folders and files for MD simulations somewhere to scratch filesystem. After that prepare the **TASKFILE** (see corresponding chapter below) and set necessary directives. Finally, `cd` into your **DATAROOT** (see below), choose necessary engine and run `~/_scratch/opt/l2-multimd/multimd.sh engine TASKFILE`.
+Load all needed modules and set environment variables if necessary. Don't forget about SLURM itself (script will remind you if `sbatch` command isn't found)! Then copy all necessary folders and files for MD simulations somewhere to scratch filesystem. After that prepare the **TASKFILE** (see corresponding chapter below) and set necessary keywords. Finally, `cd` into your **DATAROOT** (see below), choose necessary engine and run `~/_scratch/opt/l2-multimd/multimd.sh engine TASKFILE`.
 
 
 ## **TASKFILE** synopsis
-**TASKFILE** consists of pairs *DIRECTIVE params*. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Directive keywords are case-insensitive.
+**TASKFILE** consists of pairs *KEYWORD params*. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Keywords are case-insensitive.
 
-Here is the full list of supported directives (as of version 0.4.3):
+Here is the full list of supported keywords:
 * **DATAROOT**
 * **AMBERROOT**
 * **NAMDROOT**
@@ -32,10 +32,10 @@ Here is the full list of supported directives (as of version 0.4.3):
 * **BIN**
 * **TASK**
 
-Some of the directives (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown directives are ignored.
+Some of the keywords (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown keywords are ignored.
 
 #### **DATAROOT**
-This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. Value of the directive may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out on scratch filesystem!
+This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. This keyword may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out on scratch filesystem!
 
 Syntax:
 `DATAROOT /path/to/MD/root/dir`
@@ -53,7 +53,7 @@ Syntax:
 `NAMDROOT /path/to/namd/installation`
 
 #### **GAUSSIANROOT**
-This is the root directory where Gaussian computational package is installed. `gVER` (where `gVER` should be the same as **BIN** directive, e. g. `g09` or `g16`), `gv` and (perhaps) other directories should sit here. Path may contain whitespaces but should be quoted. Because of the nature of Lomonosov-2 cluster Gaussian installation should reside on scratch filesystem. **Important:** only use that engine if you've licensed Gaussian installed!
+This is the root directory where Gaussian computational package is installed. `gVER` (where `gVER` should be the same as **BIN** keyword, e. g. `g09` or `g16`), `gv` and (perhaps) other directories should sit here. Path may contain whitespaces but should be quoted. Because of the nature of Lomonosov-2 cluster Gaussian installation should reside on scratch filesystem. **Important:** only use that engine if you've licensed Gaussian installed!
 
 Syntax:
 `GAUSSIANROOT /path/to/gaussian/installation`
@@ -79,13 +79,13 @@ Syntax:
 `NUMNODES n`
 
 #### **BIN**
-This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`. **Important:** if you're using Gaussian engine then **GAUSSIANROOT** should contain directory which is named the same as **BIN** directive, for example: `g03`, `g09`, `g16`!
+This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`. **Important:** if you're using Gaussian engine then **GAUSSIANROOT** should contain directory which is named the same as **BIN** keyword, for example: `g03`, `g09`, `g16`!
 
 Syntax:
 `BIN executable-name`
 
 #### **TASK**
-This is the core directive of job queueing. It allows you to specify directory name for every task and (in case AMBER engine is used) supply AMBER-friendly list of parameters such as topology files, config files, restart files and much more. The only mandatory argument is directory name for the task. Other parameters could be derived automatically. Unknown parameters are ignored. All parameters (with the exception of nodes number) can contain whitespaces, but remember about quotation!
+This is the core keyword of job queueing. It allows you to specify directory name for every task and (in case AMBER engine is used) supply AMBER-friendly list of parameters such as topology files, config files, restart files and much more. The only mandatory argument is directory name for the task. Other parameters could be derived automatically. Unknown parameters are ignored. All parameters (with the exception of nodes number) can contain whitespaces, but remember about quotation!
 
 Syntax:
 `TASK dir-name [{-N|--nodes n} | {-T|--threads t}] [-b|--bin executable-name] [-i|--cfg config] [-o|--out output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info] [-cpin cph-input] [-cpout cph-output] [-cprestrt cph-restart] [-groupfile remd-groupfile] [-ng replicas] [-rem re-type]`
@@ -97,7 +97,7 @@ This is the directory name where all necessary files for one task is stored.
 Number of nodes for executing task in parallel. If not specified then the value of **NUMNODES** is used. If `-T|--threads t` option is present then it will obsolete current option (only for certain binaries/engines, see below). Also see the [parallelization policy](#parallelization-policy) for more details.
 
 ##### `-T|--threads t`
-Number of threads for executing task in parallel. The number of nodes for supplying this threads count is computed automatically and based on selected **PARTITION**. If `-N|--nodes n` option is present then current option will take precedence over it. This directive has effect only for NAMD engine (`namd2` binary) and some executables for AMBER engine: `sander.MPI`, `pmemd.MPI`, `pmemd.cuda.MPI`. Also see the [parallelization policy](#parallelization-policy) for more details.
+Number of threads for executing task in parallel. The number of nodes for supplying this threads count is computed automatically and based on selected **PARTITION**. If `-N|--nodes n` option is present then current option will take precedence over it. This option has effect only for some executables of AMBER engine: `sander.MPI`, `pmemd.MPI`, `pmemd.cuda.MPI`. Also see the [parallelization policy](#parallelization-policy) for more details.
 
 ##### `-b|--bin executable-name`
 Replacement for default **BIN** executable. Allows to use specific binary for task execution.
@@ -109,43 +109,43 @@ File where all settings for calculation are specified. Default value is `<dir-na
 Where all output is kept. Default value is `<dir-name>.out`.
 
 ##### `-p|--prmtop prmtop`
-*AMBER-specific directive.* Topology file for task. Default value is `<dir-name>.prmtop`.
+*AMBER-specific option.* Topology file for task. Default value is `<dir-name>.prmtop`.
 
 ##### `-c|--inpcrd coordinates`
-*AMBER-specific directive.* File with starting coordinates (and velocities, probably) for run. Default value is `<dir-name>.ncrst`.
+*AMBER-specific option.* File with starting coordinates (and velocities, probably) for run. Default value is `<dir-name>.ncrst`.
 
 ##### `-r|--restrt restart`
-*AMBER-specific directive.* AMBER will save restart snapshots here. Default value is `<dir-name>.ncrst`. NB: there could be collision with `<coordinates>` file!
+*AMBER-specific option.* AMBER will save restart snapshots here. Default value is `<dir-name>.ncrst`. NB: there could be collision with `<coordinates>` file!
 
 ##### `-ref|--refc restraints`
-*AMBER-specific directive.* AMBER reads positional restraints from that file. There is no default value for this parameter.
+*AMBER-specific option.* AMBER reads positional restraints from that file. There is no default value for this parameter.
 
 ##### `-x|--mdcrd trajectory`
-*AMBER-specific directive.* File in which MD trajectory should be saved. Default value is `<dir-name>.nc`.
+*AMBER-specific option.* File in which MD trajectory should be saved. Default value is `<dir-name>.nc`.
 
 ##### `-v|-mdvel velocities`
-*AMBER-specific directive.* AMBER will save velocities here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
+*AMBER-specific option.* AMBER will save velocities here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
 
 ##### `-inf|--mdinfo info`
-*AMBER-specific directive.* File where all MD run statistics are kept. Default value is `<dir-name>.mdinfo`.
+*AMBER-specific option.* File where all MD run statistics are kept. Default value is `<dir-name>.mdinfo`.
 
 ##### `-cpin cph-input`
-*AMBER-specific directive.* File with protonation state definitions. Default value is empty.
+*AMBER-specific option.* File with protonation state definitions. Default value is empty.
 
 ##### `-cpout cph-output`
-*AMBER-specific directive.* Protonation state definitions will be saved here. Default value is empty.
+*AMBER-specific option.* Protonation state definitions will be saved here. Default value is empty.
 
 ##### `-cprestrt cph-restart`
-*AMBER-specific directive.* Protonation state definitions for restart will be saved here. Default value is empty.
+*AMBER-specific option.* Protonation state definitions for restart will be saved here. Default value is empty.
 
 ##### `-groupfile remd-groupfile`
-*AMBER-specific directive.* Reference groupfile for replica exchange run. Default value is empty.
+*AMBER-specific option.* Reference groupfile for replica exchange run. Default value is empty.
 
 ##### `-ng replicas`
-*AMBER-specific directive.* Number of replicas. Default value is empty.
+*AMBER-specific option.* Number of replicas. Default value is empty.
 
 ##### `-rem re-type`
-*AMBER-specific directive.* Replica exchange type. Default value is empty.
+*AMBER-specific option.* Replica exchange type. Default value is empty.
 
 
 ## Parallelization policy
