@@ -79,6 +79,7 @@ NUMTASKS=0
 declare -a T_DIRS
 declare -a T_BASENAMES
 declare -a T_NODES
+declare -a T_THREADS
 declare -a T_BINS
 declare -a T_CONFIGS
 declare -a T_OUTPUTS
@@ -113,8 +114,9 @@ task () {
     T_BASENAMES[${idx}]=`basename "$1"` # get basename for all files
     shift
 
-    # apply default parameters from config file
+    # apply default parameters
     T_NODES[${idx}]="${NUMNODES}"
+    T_THREADS[${idx}]=0
     T_BINS[${idx}]="${BIN}"
 
     EXT=''
@@ -164,7 +166,30 @@ task () {
                     exit ${E_MMD_INV_TASK}
                 fi
 
+                if [[ "$2" -lt 1 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} number of nodes for the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC}) is less than 1! Exiting" >&2
+                    exit ${E_MMD_INV_TASK}
+                fi
+
                 T_NODES[${idx}]="$2"
+                shift 2
+                ;;
+
+            -T|--threads)
+                if [[ "$#" -lt 2 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    exit ${E_MMD_INV_TASK}
+                fi
+
+                if [[ "$2" -lt 1 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} number of threads for the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC}) is less than 1! Exiting" >&2
+                    exit ${E_MMD_INV_TASK}
+                fi
+
+                T_THREADS[${idx}]="$2"
                 shift 2
                 ;;
 
@@ -179,7 +204,7 @@ task () {
                 shift 2
                 ;;
 
-            -i|--config)
+            -i|--cfg)
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
@@ -190,7 +215,7 @@ task () {
                 shift 2
                 ;;
 
-            -o|--output)
+            -o|--out)
                 if [[ "$#" -lt 2 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
@@ -429,14 +454,20 @@ task () {
         esac
     done
 
-    # check for consistency between executable and requested number of nodes for AMBER engine
+    # check for consistency between executable names and requested number of nodes/threads for AMBER engine
     if [[ "${ENGINE}" -eq "${ENG_AMBER}" ]]
     then
         case "${T_BINS[${idx}]}" in
-            sander|pmemd|pmemd.cuda)
-                if [[ "${T_NODES[${idx}]}" -gt 1 ]]
+            sander|pmemd|pmemd.cuda|pmemd.cuda.MPI)
+                if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} could be only run on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting"
+                    exit ${E_MMD_INV_TASK}
+                fi
+
+                if [[ "${T_NODES[${idx}]}" -ne 1 && "${T_BINS[${idx}]}" != "pmemd.cuda.MPI" ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -448,9 +479,15 @@ task () {
     then
         case "${T_BINS[${idx}]}" in
             g03|g09|g16)
+                if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting"
+                    exit ${E_MMD_INV_TASK}
+                fi
+
                 if [[ "${T_NODES[${idx}]}" -gt 1 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} could be only run on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -639,11 +676,39 @@ RUNLIST="${DATAROOT}/runlist.${JOBID}"
 
 for ((task_idx=0; task_idx < NUMTASKS; task_idx++))
 do
-    let "TOTALNODES += ${T_NODES[${task_idx}]}"
+    # recalculate number of nodes for special cases
+    if [[ ("${T_THREADS[${task_idx}]}" -ne 0) && ((("${ENGINE}" -eq "${ENG_AMBER}") && (("${T_BINS[${task_idx}]}" == "sander.MPI" ) || ("${T_BINS[${task_idx}]}" == "pmemd.MPI"))) || ("${ENGINE}" -eq "${ENG_NAMD}")) ]]
+    then
+        declare -i NUMTHREADS
+        NUMTHREADS=${T_THREADS[${task_idx}]}
+
+        declare -i NUMCORES
+        case "${PARTITION,,}" in
+            test|compute)
+                NUMCORES=14
+                ;;
+
+            pascal)
+                NUMCORES=12
+                ;;
+
+            *)  
+                NUMCORES=1
+                ;;
+        esac
+
+        ${T_NODES[${task_idx}]}=$((1 + (NUMTHREADS - 1) % NUMCORES))
+    fi
 
     echo -e "${C_PURPLE}>> Task #$((task_idx + 1)) <<${C_NC}"
     echo -e "Data directory is ${C_YELLOW}[${T_DIRS[${task_idx}]}]${C_NC}"
     echo -e "Will use ${C_YELLOW}[${T_NODES[${task_idx}]}]${C_NC} nodes"
+
+    if [[ "${T_THREADS[${task_idx}]}" -ne 0 ]]
+    then
+        echo -e "Will run with ${C_YELLOW}[${T_THREADS[${task_idx}]}]${C_NC} threads"
+    fi
+
     echo -e "Executable binary is ${C_YELLOW}[${T_BINS[${task_idx}]}]${C_NC}"
     echo -e "Config file is ${C_YELLOW}[${T_CONFIGS[${task_idx}]}]${C_NC}"
     echo -e "Output file is ${C_YELLOW}[${T_OUTPUTS[${task_idx}]}]${C_NC}"
@@ -764,8 +829,9 @@ do
 
     if [[ "$?" -eq 0 ]]
     then
-        # add number of nodes and data directory for that task to runlist
-        echo "${T_NODES[${task_idx}]} ${DATAROOT%/}/${T_DIRS[${task_idx}]}" >> "${RUNLIST}"
+        # add number of nodes, threads and data directory for that task to runlist and increment total nodes counter
+        echo "${T_NODES[${task_idx}]} ${T_THREADS[${task_idx}]} ${DATAROOT%/}/${T_DIRS[${task_idx}]}" >> "${RUNLIST}"
+        let "TOTALNODES += ${T_NODES[${task_idx}]}"
 
         echo -e "${C_GREEN}ok${C_NC}"
     else

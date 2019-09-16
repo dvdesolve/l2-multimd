@@ -69,8 +69,8 @@ do
     # remove preceding spaces
     line=$(chomp "${line}")
 
-    # get nodes and prepare nodelist for srun
-    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; print $0}'`")
+    # get node, data directory and prepare nodelist for srun
+    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; $2 = ""; print $0}'`")
     cd "${DATADIR}"
 
     NODELIST=`sed -n "${node},${node}p" "${HOSTFILE}"`
@@ -85,8 +85,16 @@ do
     echo "Command to run is [${COMMAND}]"
     echo
 
+    # construct final run command depending on working partition
+    RUNCMD="srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
+
+    if [[ "${PARTITION,,}" == "pascal" ]]
+    then
+        RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; ${RUNCMD}"
+    fi
+
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files
-    eval srun --nodes=1 --nodelist=${NODELIST} ${COMMAND} &
+    eval ${RUNCMD} &
 done
 
 

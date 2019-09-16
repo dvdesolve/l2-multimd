@@ -86,21 +86,24 @@ do
     # remove preceding spaces
     line=$(chomp "${line}")
 
-    # get nodes and prepare nodelist file for charmrun
-    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; print $0}'`")
+    # get nodes, threadsm data directory and prepare nodelist for charmrun
+    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; $2 = ""; print $0}'`")
     cd "${DATADIR}"
 
     echo "group main" > nodelist.${ID}
 
     NUMNODES=`echo "${line}" | awk '{print $1}'`
+    NUMTHREADS=`echo "${line}" | awk '{print $2}'`
     NODELIST=`sed -n "${node},$((node + NUMNODES - 1))p" "${HOSTFILE}"`
     let "node += NUMNODES"
 
     echo "${NODELIST}" >> nodelist.${ID}
 
-    # calculate threads count
-    declare -i NUMTHREADS
-    let "NUMTHREADS = NUMCORES * NUMNODES"
+    # calculate threads count, if user hasn't requested something special
+    if [[ "${NUMTHREADS}" -eq 0 ]]
+    then
+        let "NUMTHREADS = NUMCORES * NUMNODES"
+    fi
 
     # get command to run and proper config file
     COMMAND=`cat "runcmd.${ID}"`

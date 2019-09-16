@@ -86,11 +86,12 @@ do
     # remove preceding spaces
     line=$(chomp "${line}")
 
-    # get nodes and prepare hostfile for mpirun
-    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; print $0}'`")
+    # get nodes, threads, data directory and prepare nodelist for command execution
+    DATADIR=$(chomp "`echo "${line}" | awk '{$1 = ""; $2 = ""; print $0}'`")
     cd "${DATADIR}"
 
     NUMNODES=`echo "${line}" | awk '{print $1}'`
+    NUMTHREADS=`echo "${line}" | awk '{print $2}'`
     NODELIST=`sed -n "${node},$((node + NUMNODES - 1))p" "${HOSTFILE}"`
     let "node += NUMNODES"
 
@@ -106,7 +107,7 @@ do
     echo "Command to run is [${COMMAND}]"
     echo
 
-    # construct final run command depending on executable filename and working partition
+    # construct final run command depending on executable filename, working partition and threads number
     RUNCMD=""
 
     case $(binname "${COMMAND}") in
@@ -117,7 +118,13 @@ do
 
         sander.MPI|pmemd.MPI)
             sed -i "s/slots=1/slots=${NUMCORES}/g" hostfile.${ID}
-            RUNCMD="mpirun --hostfile hostfile.${ID} --npernode ${NUMCORES} --nooversubscribe ${COMMAND}"
+
+            if [[ "${NUMTHREADS}" -ne 0 ]]
+            then
+                RUNCMD="mpirun --hostfile hostfile.${ID} -np ${NUMTHREADS} --nooversubscribe ${COMMAND}"
+            else
+                RUNCMD="mpirun --hostfile hostfile.${ID} --npernode ${NUMCORES} --nooversubscribe ${COMMAND}"
+            fi
             ;;
 
         pmemd.cuda.MPI)
