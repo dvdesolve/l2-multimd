@@ -22,7 +22,6 @@ INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
 
 
 ### installation tree
-#FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh gaussian-wrapper.sh LICENSE README.md"
 FILELIST=$(<distfiles)
 
 
