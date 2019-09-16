@@ -795,15 +795,21 @@ fi
 CMD="sbatch -N ${TOTALNODES} -p ${PARTITION} -t ${RUNTIME} ${WRAPPER} ${JOBID} ${RUNTIME} ${PARTITION} $((NUMTASKS - NUMERRORS)) \"${L2_ROOT}\" \"${DATAROOT}\""
 
 
-# give user the last chance to check for possible errors
+# give user the last chance to check for possible errors and exit if none of the tasks have been prepared successfully
 echo
 echo
+
+if [[ "${NUMERRORS}" -eq "${NUMTASKS}" ]]
+then
+    echo -e "${C_RED}ERROR:${C_NC} none of the requested tasks have been prepared successfully! Please re-check your config! Exiting" >&2
+    exit ${E_MMD_PREP_FAIL}
+fi
 
 C_TMP_TYPE="${C_GREEN}"
 
-if [[ "$NUMERRORS" -gt 0 ]]
+if [[ "${NUMERRORS}" -gt 0 ]]
 then
-    echo -e "${C_RED}WARNING:${C_NC} there was some problems with ${C_YELLOW}${NUMERRORS}${C_NC} task(s). Please review job summary with extra attention!"
+    echo -e "${C_RED}WARNING:${C_NC} there was some problems with ${C_YELLOW}${NUMERRORS}${C_NC} task(s). Please review job summary and your config with extra attention!" >&2
     C_TMP_TYPE="${C_RED}"
 fi
 
