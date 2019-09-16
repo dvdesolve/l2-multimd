@@ -183,6 +183,12 @@ task () {
                     exit ${E_MMD_INV_TASK}
                 fi
 
+                if [[ "${ENGINE}" -eq "${ENG_NAMD}" || "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Selected engine can't be used in custom threaded mode. Exiting" >&2
+                    exit ${E_MMD_INV_TASK}
+                fi
+
                 if [[ "$2" -lt 1 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} number of threads for the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC}) is less than 1! Exiting" >&2
@@ -461,13 +467,13 @@ task () {
             sander|pmemd|pmemd.cuda|pmemd.cuda.MPI)
                 if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting"
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
                 if [[ "${T_NODES[${idx}]}" -ne 1 && "${T_BINS[${idx}]}" != "pmemd.cuda.MPI" ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -479,15 +485,9 @@ task () {
     then
         case "${T_BINS[${idx}]}" in
             g03|g09|g16)
-                if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
-                then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting"
-                    exit ${E_MMD_INV_TASK}
-                fi
-
                 if [[ "${T_NODES[${idx}]}" -gt 1 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting"
+                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -677,7 +677,7 @@ RUNLIST="${DATAROOT}/runlist.${JOBID}"
 for ((task_idx=0; task_idx < NUMTASKS; task_idx++))
 do
     # recalculate number of nodes for special cases
-    if [[ ("${T_THREADS[${task_idx}]}" -ne 0) && ((("${ENGINE}" -eq "${ENG_AMBER}") && (("${T_BINS[${task_idx}]}" == "sander.MPI" ) || ("${T_BINS[${task_idx}]}" == "pmemd.MPI"))) || ("${ENGINE}" -eq "${ENG_NAMD}")) ]]
+    if [[ ("${T_THREADS[${task_idx}]}" -ne 0) && (("${ENGINE}" -eq "${ENG_AMBER}") && (("${T_BINS[${task_idx}]}" == "sander.MPI" ) || ("${T_BINS[${task_idx}]}" == "pmemd.MPI"))) ]]
     then
         declare -i NUMTHREADS
         NUMTHREADS=${T_THREADS[${task_idx}]}
@@ -697,7 +697,7 @@ do
                 ;;
         esac
 
-        ${T_NODES[${task_idx}]}=$((1 + (NUMTHREADS - 1) % NUMCORES))
+        T_NODES[${task_idx}]=$((1 + (NUMTHREADS - 1) / NUMCORES))
     fi
 
     echo -e "${C_PURPLE}>> Task #$((task_idx + 1)) <<${C_NC}"

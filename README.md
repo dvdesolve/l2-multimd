@@ -167,7 +167,7 @@ If there are no `-T|--threads t` option is specified in task definition then `sa
 For `pmemd.cuda.MPI` executable thread allocation depends on selected partition. If `pascal` partition has been requested then 2 threads per node will be allocated for execution and both GPUs will be available for calculations. Otherwise, `pmemd.cuda.MPI` will have only 1 thread per node. Option `-T|--threads t` is incompatible with this executable.
 
 #### NAMD engine
-If the `-T|--threads t` option is specified in task definition then `t` threads will be allocated for this task. Otherwise, threads number will be the following: `THREADS = NODES * NUMCORES`. If `pascal` partition has been requested then both GPUs will be available for `namd2`.
+Threads number for calculation will be the following: `THREADS = NODES * NUMCORES`. If `pascal` partition has been requested then both GPUs will be available for `namd2`. Option `-T|--threads t` is incompatible with this engine.
 
 #### Gaussian engine
 Currently **l2-multimd** doesn't support Linda + Gaussian bindings so all tasks will be run *exactly on 1 node*, however the number of threads depends on user-supplied config file. Because of specific way of setting Gaussian calculations in parallel it's all up to user to prepare config input properly to run on desirable number of CPU cores and GPU cards. If `pascal` partition has been requested then both GPUs will be available for Gaussian executables. Option `-T|--threads t` is incompatible with this engine.

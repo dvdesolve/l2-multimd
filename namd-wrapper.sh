@@ -93,17 +93,13 @@ do
     echo "group main" > nodelist.${ID}
 
     NUMNODES=`echo "${line}" | awk '{print $1}'`
-    NUMTHREADS=`echo "${line}" | awk '{print $2}'`
     NODELIST=`sed -n "${node},$((node + NUMNODES - 1))p" "${HOSTFILE}"`
     let "node += NUMNODES"
 
     echo "${NODELIST}" >> nodelist.${ID}
 
-    # calculate threads count, if user hasn't requested something special
-    if [[ "${NUMTHREADS}" -eq 0 ]]
-    then
-        let "NUMTHREADS = NUMCORES * NUMNODES"
-    fi
+    # calculate threads count
+    let "NUMTHREADS = NUMCORES * NUMNODES"
 
     # get command to run and proper config file
     COMMAND=`cat "runcmd.${ID}"`
