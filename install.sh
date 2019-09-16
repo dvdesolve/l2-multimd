@@ -13,16 +13,20 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
-### default settings
-INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh gaussian-wrapper.sh LICENSE README.md"
-
-
-# perform some checks
+### perform some checks
 check_bash ${L2_PRINT_INT}
 
 
-# print header
+### default settings
+INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
+
+
+### installation tree
+#FILELIST="global.sh bash-completion/multimd multimd.sh amber-wrapper.sh namd-wrapper.sh gaussian-wrapper.sh LICENSE README.md"
+FILELIST=$(<distfiles)
+
+
+### print header
 print_header ${L2_PRINT_INT} "Lomonosov-2 batch wrapper installation script v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
@@ -38,11 +42,19 @@ echo -e "${C_PURPLE}INFO:${C_NC} checking integrity of source package..."
 for f in ${FILELIST}
 do
     srcf="${SCRIPTDIR}/${f}"
+    fhash=$(md5sum "${srcf}" | awk '{print $1}')
+    fdisthash=$(awk "\$2 == \"${f}\" {print \$1}" disthashes)
 
     if [[ ! -e "${srcf}" ]]
     then
         echo -e "${C_RED}ERROR:${C_NC} file ${C_YELLOW}[${f}]${C_NC} wasn't found in source tree. Exiting" >&2
         exit ${E_INST_NO_FILES}
+    fi
+
+    if [[ "${fhash}" != "${fdisthash}" ]]
+    then
+        echo -e "${C_RED}ERROR:${C_NC} checksum of ${C_YELLOW}[${f}]${C_NC} differs from source tree. Exiting" >&2
+        exit ${E_INST_BAD_HASH}
     fi
 done
 
