@@ -3,11 +3,28 @@ Management system to run several molecular dynamics simulations from one batch j
 
 
 ## What is it?
-This tool allows you to run several molecular dynamics simulations on Lomonosov-2 cluster simultaneously using only one SLURM job. Total number of nodes needed for allocation auto-computed according to provided taskfile.
+This tool allows you to run several molecular dynamics simulations on Lomonosov-2 cluster simultaneously using only one SLURM job. Total number of nodes needed for allocation auto-computed according to provided [taskfile](#taskfile-synopsis).
+
+Though this tool has been designed specially for [Lomonosov-2 supercomputer cluster](https://parallel.ru/cluster/lomonosov2.html) it can be easily modified for use with any cluster which uses [SLURM workload manager](https://slurm.schedmd.com/). Even if your cluster uses another workload manager **l2-multimd** can still be adapted for it without any major code modifications.
+
+Feel free to use it, modify it and contribute to it by reporting bugs, suggesting enhancements, feature requests and pull requests.
 
 
 ## Dependencies
-You need `bash` interpreter of version 4.0 or higher
+### Installation
+For successfull installation make sure you have the following packages/utilities installed and available:
+- `bash` (>= 4.0)
+- `md5sum`
+- `awk` (make sure that `awk` executable is in your `PATH`)
+- `sed`
+
+### Usage
+To use **l2-multimd** on your cluster make sure that the following packages/utilities are available in your environment:
+- `bash` (>= 4.0)
+- SLURM package (`sbatch` and `srun` executables)
+- `awk`
+- `sed`
+Also if you want to be able to run MPI versions of executables please install MPI package which provides `mpirun` binary (OpenMPI should work fine)
 
 
 ## How to install
@@ -15,11 +32,49 @@ Clone this repo (or download archive) and extract in your home folder on Lomonos
 
 
 ## Usage
-Load all needed modules and set environment variables if necessary. Don't forget about SLURM itself (script will remind you if `sbatch` command isn't found)! Then copy all necessary folders and files for MD simulations somewhere to scratch filesystem. After that prepare the **TASKFILE** (see corresponding chapter below) and set necessary keywords. Finally, `cd` into your **DATAROOT** (see below), choose necessary engine and run `~/_scratch/opt/l2-multimd/multimd.sh engine TASKFILE`.
+Load all necessary modules (if you use `env-modules`) and/or set proper environment variables. Don't forget about SLURM itself (script will remind you if `sbatch` command isn't found). Then prepare file tree for your computations somewhere on scratch filesystem. After that prepare the `<taskfile>` (see [corresponding chapter below](#taskfile-synopsis)) and set necessary keywords. Finally, `cd` where your `<taskfile>` resides, choose necessary `<engine>` and run:
+```
+~/_scratch/opt/l2-multimd/multimd.sh <engine> <taskfile>
+```
+To make things even easier you can employ useful alias which **l2-multimd** provides for you: include in your `~/.bashrc` file the following lines (where `<username>` refers to your user name on cluster):
+```
+if [[ -e "/home/<username>/_scratch/opt/l2-multimd/bash-completion/multimd" ]]
+then
+    source /home/<username>/_scratch/opt/l2-multimd/bash-completion/multimd
+fi
+```
+Don't forget to source `~/.bashrc` from your `~/.bash_profile` and re-login to make changes effective. After that you could run multiple jobs at once with this simple incantation:
+```
+l2-multimd <engine> <taskfile>
+```
 
 
 ## **TASKFILE** synopsis
 **TASKFILE** consists of pairs `KEYWORD options`. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Keywords are case-insensitive.
+
+**TASKFILE** is being processed in line-by-line fashion so keep it in mind. For example, task definitions can make use of some job-wide defaults such as number of nodes and executable names so if you want your defaults to be applied properly please be sure that all desirable task definitions are below the corresponding job-wide keywords.
+
+Keywords can occur in **TASKFILE** several times. Every next keyword overrides previous incantations (with the exception of **TASK** keywords - it simply creates one more task). However it makes sense to use keywords several times only for two of them - **NUMNODES** and **BIN** and only if you want to run large job with dozens of tasks. Let's consider the following example:
+```
+...
+# this is the first bunch of tasks; they should be run with sander.MPI and on 3 cluster nodes each
+BIN sander.MPI
+NUMNODES 3
+TASK run1
+TASK run2
+...
+TASK runN
+
+# the rest of the tasks should be run with pmemd.cuda and only on 1 node
+BIN pmemd.cuda
+NUMNODES 1
+TASK runN1
+TASK runN2
+...
+TASK runNM
+...
+```
+Here tasks in directories `run1` to `runN` will be run with `sander.MPI` executable and on 3 nodes per task. During the same job tasks in directories `runN1` to `runNM` will use `pmemd.cuda` and 1 node per task.
 
 Here is the full list of supported keywords:
 * **DATAROOT**
@@ -34,64 +89,67 @@ Here is the full list of supported keywords:
 
 Some of the keywords (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown keywords are ignored.
 
-#### **DATAROOT**
+### **DATAROOT**
 This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. This keyword may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out on scratch filesystem!
 
 Syntax:
 `DATAROOT /path/to/MD/root/dir`
 
-#### **AMBERROOT**
-This is the root directory where AMBER computational package is installed (`bin`, `lib` and other directories should sit here). Path may contain whitespaces but should be enclosed in quotes. Because of how Lomonosov-2 cluster works AMBER distrib should reside somewhere on scratch filesystem.
+### **AMBERROOT**
+This is the root directory where AMBER computational package is installed (`bin`, `lib` and other directories should reside here). Path may contain whitespaces but should be enclosed in quotes. Because of how Lomonosov-2 cluster works AMBER distrib should be installed somewhere on scratch filesystem. Ignored if selected engine is not `amber`.
 
 Syntax:
 `AMBERROOT /path/to/amber/installation`
 
-#### **NAMDROOT**
-This is the root directory where NAMD computational package is installed (`namd2`, `numd-runscript.sh` and other files should sit here). Path may contain whitespaces but should be quoted. Because of how Lomonosov-2 cluster works NAMD distrib should reside on scratch filesystem too.
+### **NAMDROOT**
+This is the root directory where NAMD computational package is installed (`namd2`, `numd-runscript.sh` and other files should sit here). Path may contain whitespaces but should be quoted. Because of how Lomonosov-2 cluster works NAMD distrib should be installed on scratch filesystem too. Ignored if selected engine is not `namd`.
 
 Syntax:
 `NAMDROOT /path/to/namd/installation`
 
-#### **GAUSSIANROOT**
-This is the root directory where Gaussian computational package is installed. `gVER` (where `gVER` should be the same as **BIN** keyword, e. g. `g09` or `g16`), `gv` and (perhaps) other directories should sit here. Path may contain whitespaces but should be quoted. Because of the nature of Lomonosov-2 cluster Gaussian installation should reside on scratch filesystem. **Important:** only use that engine if you've licensed Gaussian installed!
+### **GAUSSIANROOT**
+This is the root directory where Gaussian computational package is installed. `gVER` (where `gVER` should be the same as **BIN** keyword, e. g. `g09` or `g16`), `gv` and (perhaps) other directories should sit here. Path may contain whitespaces but should be quoted. Because of the nature of Lomonosov-2 cluster Gaussian installation should be installed on scratch filesystem. **Important:** only use that engine if you've licensed Gaussian installed! Ignored if selected engine is not `gaussian`.
 
 Syntax:
 `GAUSSIANROOT /path/to/gaussian/installation`
 
-#### **RUNTIME**
+### **RUNTIME**
 Sets the runtime limit for the whole bunch of tasks. After that time SLURM will interrupt the job. Default value is `05:00`.
 
 Syntax:
 `RUNTIME DD-HH:MM:SS`
 NB: any higher part of runtime specification is optional, e. g. you could use such as `RUNTIME 30:00`
 
-#### **PARTITION**
+### **PARTITION**
 Sets the cluster partition to run simulation on.
 
 Syntax:
 `PARTITION partition-name`
 Number of CPU cores and GPU cards per node is computed automatically and depends on `partition-name`. Possible values are `test`, `compute` and `pascal`. Default value is `test`
 
-#### **NUMNODES**
+### **NUMNODES**
 Sets default number of nodes per task. Useful if every task from the given list should use the same number of nodes. Default value is `1`.
 
 Syntax:
 `NUMNODES n`
 
-#### **BIN**
+### **BIN**
 This is default binary which should be used to perform calculations. Useful if every task uses the same binary executable. May contain spaces (quotes are necessary in this case). Default value is `sander`. **Important:** if you're using Gaussian engine then **GAUSSIANROOT** should contain directory which is named the same as **BIN** keyword, for example: `g03`, `g09`, `g16`!
 
 Syntax:
 `BIN executable-name`
 
-#### **TASK**
-This is the core keyword of job queueing. It allows you to specify directory name for every task and (in case AMBER engine is used) supply AMBER-friendly list of parameters such as topology files, config files, restart files and much more. The only mandatory argument is directory name for the task. Other parameters could be derived automatically. Unknown parameters are ignored. All parameters (with the exception of nodes number) can contain whitespaces, but remember about quotation!
+### **TASK**
+This is the core keyword for job queueing. It allows you to specify directory name for every task, input config files, output files and, if AMBER engine is used, to specify AMBER-compatible list of options such as topology files, restart files etc. The only mandatory argument is directory name for the task. Other options could be derived automatically (see default values for those options). Unknown options are ignored. All options (with the exception of nodes/threads number) can contain whitespaces, but remember about quotation!
 
 Syntax:
 `TASK dir-name [{-N|--nodes n} | {-T|--threads t}] [-b|--bin executable-name] [-i|--cfg config] [-o|--out output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info] [-cpin cph-input] [-cpout cph-output] [-cprestrt cph-restart] [-groupfile remd-groupfile] [-ng replicas] [-rem re-type]`
 
+#### Common options
+These options have the same meaning for any engine.
+
 ##### `dir-name`
-This is the directory name where all necessary files for one task is stored.
+This is the directory name where all necessary files for one task is stored. Absolutely required.
 
 ##### `-N|--nodes n`
 Number of nodes for executing task in parallel. If not specified then the value of **NUMNODES** is used. If `-T|--threads t` option is present then it will obsolete current option (only for certain binaries/engines, see below). Also see the [parallelization policy](#parallelization-policy) for more details.
@@ -108,44 +166,47 @@ File where all settings for calculation are specified. Default value is `<dir-na
 ##### `-o|--out output`
 Where all output is kept. Default value is `<dir-name>.out`.
 
+#### AMBER-specific options
+These options are specific for AMBER engine. If another engine is requested these options will be skipped.
+
 ##### `-p|--prmtop prmtop`
-*AMBER-specific option.* Topology file for task. Default value is `<dir-name>.prmtop`.
+Topology file for task. Default value is `<dir-name>.prmtop`.
 
 ##### `-c|--inpcrd coordinates`
-*AMBER-specific option.* File with starting coordinates (and velocities, probably) for run. Default value is `<dir-name>.ncrst`.
+File with starting coordinates (and velocities, probably) for run. Default value is `<dir-name>.ncrst`.
 
 ##### `-r|--restrt restart`
-*AMBER-specific option.* AMBER will save restart snapshots here. Default value is `<dir-name>.ncrst`. NB: there could be collision with `<coordinates>` file!
+AMBER will save restart snapshots here. Default value is `<dir-name>.ncrst`. NB: there could be collision with `<coordinates>` file!
 
 ##### `-ref|--refc restraints`
-*AMBER-specific option.* AMBER reads positional restraints from that file. There is no default value for this parameter.
+AMBER reads positional restraints from that file. There is no default value for this parameter.
 
 ##### `-x|--mdcrd trajectory`
-*AMBER-specific option.* File in which MD trajectory should be saved. Default value is `<dir-name>.nc`.
+File in which MD trajectory should be saved. Default value is `<dir-name>.nc`.
 
 ##### `-v|-mdvel velocities`
-*AMBER-specific option.* AMBER will save velocities here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
+AMBER will save velocities here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
 
 ##### `-inf|--mdinfo info`
-*AMBER-specific option.* File where all MD run statistics are kept. Default value is `<dir-name>.mdinfo`.
+File where all MD run statistics are kept. Default value is `<dir-name>.mdinfo`.
 
 ##### `-cpin cph-input`
-*AMBER-specific option.* File with protonation state definitions. Default value is empty.
+File with protonation state definitions. Default value is empty.
 
 ##### `-cpout cph-output`
-*AMBER-specific option.* Protonation state definitions will be saved here. Default value is empty.
+Protonation state definitions will be saved here. Default value is empty.
 
 ##### `-cprestrt cph-restart`
-*AMBER-specific option.* Protonation state definitions for restart will be saved here. Default value is empty.
+Protonation state definitions for restart will be saved here. Default value is empty.
 
 ##### `-groupfile remd-groupfile`
-*AMBER-specific option.* Reference groupfile for replica exchange run. Default value is empty.
+Reference groupfile for replica exchange run. Default value is empty.
 
 ##### `-ng replicas`
-*AMBER-specific option.* Number of replicas. Default value is empty.
+Number of replicas. Default value is empty.
 
 ##### `-rem re-type`
-*AMBER-specific option.* Replica exchange type. Default value is empty.
+Replica exchange type. Default value is empty.
 
 
 ## Parallelization policy
@@ -159,15 +220,15 @@ Partition name | CPU type | GPU type | Number of CPU cores (`NUMCORES`) | Number
 
 Here are basic rules for all possible combinations supported by **l2-multimd**.
 
-#### AMBER engine
+### AMBER engine
 Executables `sander`, `pmemd` and `pmemd.cuda` can only be run in single instance (1 thread and 1 node). Thus, option `-T|--threads t` is incompatible with these executables.
 
 If there are no `-T|--threads t` option is specified in task definition then `sander.MPI` and `pmemd.MPI` will be run with `NODES * NUMCORES` threads without oversubscribing. However, if that option is present then `-N|--nodes n` option will be ignored and required number of nodes for the task will be recalculated according to the `NUMCORES` property of selected partition.
 
 For `pmemd.cuda.MPI` executable thread allocation depends on selected partition. If `pascal` partition has been requested then 2 threads per node will be allocated for execution and both GPUs will be available for calculations. Otherwise, `pmemd.cuda.MPI` will have only 1 thread per node. Option `-T|--threads t` is incompatible with this executable.
 
-#### NAMD engine
+### NAMD engine
 Threads number for calculation will be the following: `THREADS = NODES * NUMCORES`. If `pascal` partition has been requested then both GPUs will be available for `namd2`. Option `-T|--threads t` is incompatible with this engine.
 
-#### Gaussian engine
+### Gaussian engine
 Currently **l2-multimd** doesn't support Linda + Gaussian bindings so all tasks will be run *exactly on 1 node*, however the number of threads depends on user-supplied config file. Because of specific way of setting Gaussian calculations in parallel it's all up to user to prepare config input properly to run on desirable number of CPU cores and GPU cards. If `pascal` partition has been requested then both GPUs will be available for Gaussian executables. Option `-T|--threads t` is incompatible with this engine.
