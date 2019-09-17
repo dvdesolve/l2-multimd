@@ -1,13 +1,18 @@
 ### error codes
+# common errors
 E_NOTABASH=1
 E_OLD_BASH=2
-E_HOSTFILE=3
+E_CMD_NOT_FOUND=3
 
-E_INST_NO_FILES=3
-E_INST_BAD_HASH=4
-E_INST_ERR_IO=5
+# errors in wrappers (enumeration starts from last common error num + 1)
+E_WR_HOSTFILE=4
 
-E_MMD_NO_SLURM=3
+# errors in install script (the same about enumeration)
+E_INST_NO_FILES=4
+E_INST_BAD_HASH=5
+E_INST_ERR_IO=6
+
+# errors in multimd script (the same about enumeration)
 E_MMD_POS_ARGS=4
 E_MMD_UNK_ENGN=5
 E_MMD_INV_CONF=6
@@ -63,6 +68,33 @@ check_bash() {
     then
         echo -e "${clr_red}ERROR:${clr_nc} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
         exit ${E_OLD_BASH}
+    fi
+}
+
+
+### check presence of specific program
+check_exec() {
+    # determine mode - interactive or logging
+    declare -i mode
+    mode="$1"
+
+    shift
+
+    if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
+    then
+        C_TMP_RED="${C_RED}"
+        C_TMP_YELLOW="${C_YELLOW}"
+        C_TMP_NC="${C_NC}"
+    else
+        C_TMP_RED=""
+        C_TMP_YELLOW=""
+        C_TMP_NC=""
+    fi
+
+    if ! command -v "$1" > /dev/null 2>&1
+    then
+        echo -e "${C_TMP_RED}ERROR:${C_TMP_NC} utility ${C_TMP_YELLOW}[$1]${C_TMP_NC} not found! Exiting" >&2
+        exit ${E_CMD_NOT_FOUND};
     fi
 }
 

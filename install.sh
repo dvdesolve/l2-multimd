@@ -10,25 +10,26 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 ### perform some checks
 check_bash ${L2_PRINT_INT}
 
-
-### default settings
-INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
-
-
-### installation tree
-FILELIST=$(<distfiles)
-
-
-### print header
+# print header
 print_header ${L2_PRINT_INT} "Lomonosov-2 batch wrapper installation script v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
+
+# check for the rest of necessary tools
+check_exec ${L2_PRINT_INT} "awk"
+check_exec ${L2_PRINT_INT} "sed"
+check_exec ${L2_PRINT_INT} "md5sum"
+
+
+### global settings
+INSTALLPATH="${HOME}/_scratch/opt/l2-multimd"
+FILELIST=$(<distfiles)
 
 
 ### main script starts here

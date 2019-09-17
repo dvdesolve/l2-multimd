@@ -10,28 +10,23 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
-# perform some checks
+### perform some checks
 check_bash ${L2_PRINT_INT}
-
 
 # print header
 print_header ${L2_PRINT_INT} "Lomonosov-2 batch wrapper v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
 
-
-# check for SLURM availability
-if ! command -v sbatch > /dev/null 2>&1
-then
-    echo -e "${C_RED}ERROR:${C_NC} no SLURM tools are found (maybe you forgot about 'module load'?)! Exiting" >&2
-    exit ${E_MMD_NO_SLURM};
-fi
+# check for the rest of necessary tools
+check_exec ${L2_PRINT_INT} "awk"
+check_exec ${L2_PRINT_INT} "sbatch"
 
 
-# usage help
+### usage help
 if [[ "$#" -ne 2 ]]
 then
     echo "Usage: $0 engine taskfile"

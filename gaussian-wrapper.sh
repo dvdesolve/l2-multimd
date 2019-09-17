@@ -24,17 +24,21 @@ DATAROOT="$@"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
-# perform some checks
+### perform some checks
 check_bash ${L2_PRINT_LOG}
-
 
 # print header
 print_header ${L2_PRINT_LOG} "Lomonosov-2 Gaussian runscript v${L2_MMD_VER}" "Written by Viktor Drobot"
 echo
 echo
+
+# check for the rest of necessary tools
+check_exec ${L2_PRINT_LOG} "awk"
+check_exec ${L2_PRINT_LOG} "sed"
+check_exec ${L2_PRINT_LOG} "srun"
 
 
 # set correct temporary directory
@@ -46,7 +50,7 @@ fi
 
 # get list of allocated nodes
 HOSTFILE="${TMPDIR}/hostfile.${SLURM_JOB_ID}"
-srun hostname -s | sort | uniq -c | awk '{print $2}' > "${HOSTFILE}" || { rm -f "${HOSTFILE}"; exit ${E_HOSTFILE}; }
+srun hostname -s | sort | uniq -c | awk '{print $2}' > "${HOSTFILE}" || { rm -f "${HOSTFILE}"; exit ${E_WR_HOSTFILE}; }
 
 
 # print short summary
