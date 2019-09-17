@@ -49,24 +49,24 @@ check_bash() {
     declare -i mode
     mode="$1"
 
-    local clr_red="${C_RED}"
-    local clr_nc="${C_NC}"
+    local C_TMP_RED="${C_RED}"
+    local C_TMP_NC="${C_NC}"
 
     if [[ "${mode}" -eq "${L2_PRINT_LOG}" ]]
     then
-        clr_red=''
-        clr_nc=''
+        C_TMP_RED=""
+        C_TMP_NC=""
     fi
 
     if [ -z "${BASH_VERSION}" ]
     then
-        echo -e "${clr_red}ERROR:${clr_nc} this script supports only BASH interpreter! Exiting" >&2
+        echo -e "${C_TMP_RED}ERROR:${C_TMP_NC} this script supports only BASH interpreter! Exiting" >&2
         exit ${E_NOTABASH}
     fi
 
     if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]
     then
-        echo -e "${clr_red}ERROR:${clr_nc} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
+        echo -e "${C_TMP_RED}ERROR:${C_TMP_NC} this script needs BASH 4.0 or greater! Your current version is ${BASH_VERSION}. Exiting" >&2
         exit ${E_OLD_BASH}
     fi
 }
@@ -80,12 +80,11 @@ check_exec() {
 
     shift
 
-    if [[ "${mode}" -eq "${L2_PRINT_INT}" ]]
-    then
-        C_TMP_RED="${C_RED}"
-        C_TMP_YELLOW="${C_YELLOW}"
-        C_TMP_NC="${C_NC}"
-    else
+    local C_TMP_RED="${C_RED}"
+    local C_TMP_YELLOW="${C_YELLOW}"
+    local C_TMP_NC="${C_NC}"
+
+    if [[ "${mode}" -eq "${L2_PRINT_LOG}" ]]
         C_TMP_RED=""
         C_TMP_YELLOW=""
         C_TMP_NC=""
