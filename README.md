@@ -19,7 +19,7 @@ Load all needed modules and set environment variables if necessary. Don't forget
 
 
 ## **TASKFILE** synopsis
-**TASKFILE** consists of pairs *KEYWORD params*. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Keywords are case-insensitive.
+**TASKFILE** consists of pairs `KEYWORD options`. Comments are allowed and marked with `#`. You can't use them inside line - only the whole line could be commented out. Any extra spaces at the beginning of the line are ignored. Empty lines are also ignored. Keywords are case-insensitive.
 
 Here is the full list of supported keywords:
 * **DATAROOT**
