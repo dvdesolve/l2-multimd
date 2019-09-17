@@ -10,7 +10,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "ERROR: library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 ### perform some checks
@@ -157,13 +157,13 @@ task () {
             -N|--nodes)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
                 if [[ "$2" -lt 1 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} number of nodes for the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC}) is less than 1! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} number of nodes for the task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC} is less than 1! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
@@ -174,19 +174,19 @@ task () {
             -T|--threads)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
                 if [[ "${ENGINE}" -eq "${ENG_NAMD}" || "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Selected engine can't be used in custom threaded mode. Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} selected engine can't be used in custom threaded mode (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
                 if [[ "$2" -lt 1 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} number of threads for the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC}) is less than 1! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} number of threads for the task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC} is less than 1! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
@@ -197,7 +197,7 @@ task () {
             -b|--bin)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
@@ -208,7 +208,7 @@ task () {
             -i|--cfg)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
@@ -219,7 +219,7 @@ task () {
             -o|--out)
                 if [[ "$#" -lt 2 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
@@ -227,18 +227,19 @@ task () {
                 shift 2
                 ;;
 
+            # AMBER-specific options are here
             -p|--prmtop)
                 if [[ "${ENGINE}" -eq "${ENG_AMBER}" ]]
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_PRMTOPS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -249,13 +250,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_COORDS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -266,13 +267,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_RESTARTS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -283,13 +284,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_REFCS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -300,13 +301,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_TRAJS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -317,13 +318,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_VELS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -334,13 +335,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_INFOS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -351,13 +352,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPINS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -368,13 +369,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPOUTS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -385,13 +386,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_CPRESTRTS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -402,13 +403,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_GROUPFILES[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -419,13 +420,13 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_NGS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
@@ -436,20 +437,20 @@ task () {
                 then
                     if [[ "$#" -lt 2 ]]
                     then
-                        echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
                         exit ${E_MMD_INV_TASK}
                     fi
 
                     T_AMB_REMS[${idx}]="$2"
                 else
-                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-related parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
 
                 shift 2
                 ;;
 
             *)
-                echo -e "${C_RED}WARNING:${C_NC} skipping unknown parameter ${C_YELLOW}[${token}]${C_NC} in task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                echo -e "${C_RED}WARNING:${C_NC} skipping unknown parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 shift
                 ;;
         esac
@@ -462,13 +463,13 @@ task () {
             sander|pmemd|pmemd.cuda|pmemd.cuda.MPI)
                 if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode. Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi
 
                 if [[ "${T_NODES[${idx}]}" -ne 1 && "${T_BINS[${idx}]}" != "pmemd.cuda.MPI" ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC} (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -480,9 +481,9 @@ task () {
     then
         case "${T_BINS[${idx}]}" in
             g03|g09|g16)
-                if [[ "${T_NODES[${idx}]}" -gt 1 ]]
+                if [[ "${T_NODES[${idx}]}" -ne 1 ]]
                 then
-                    echo -e "${C_RED}ERROR:${C_NC} something wrong with the task definition ${C_YELLOW}#$((idx + 1))${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})! Executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC}. Exiting" >&2
+                    echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC} (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})!  Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi 
                 ;;
@@ -509,7 +510,7 @@ case "${1^^}" in
         ;;
 
     *)
-        echo -e "${C_RED}ERROR:${C_NC} unsupported engine ${C_YELLOW}[$1]${C_NC} is given! Exiting" >&2
+        echo -e "${C_RED}ERROR:${C_NC} unsupported engine ${C_YELLOW}[$1]${C_NC}! Exiting" >&2
         exit ${E_MMD_UNK_ENGN}
         ;;
 esac
@@ -562,7 +563,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
             then
                 AMBERROOT="${PARAMS}"
             else
-                echo -e "${C_RED}WARNING:${C_NC} ignoring AMBER-related keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                echo -e "${C_RED}WARNING:${C_NC} ignoring AMBER-specific keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
             fi
             ;;
 
@@ -571,7 +572,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
             then
                 NAMDROOT="${PARAMS}"
             else
-                echo -e "${C_RED}WARNING:${C_NC} ignoring NAMD-related keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                echo -e "${C_RED}WARNING:${C_NC} ignoring NAMD-specific keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
             fi
             ;;
 
@@ -580,7 +581,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
             then
                 GAUSSIANROOT="${PARAMS}"
             else
-                echo -e "${C_RED}WARNING:${C_NC} ignoring Gaussian-related keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+                echo -e "${C_RED}WARNING:${C_NC} ignoring Gaussian-specific keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
             fi
             ;;
 
@@ -862,7 +863,7 @@ echo
 
 if [[ "${NUMERRORS}" -eq "${NUMTASKS}" ]]
 then
-    echo -e "${C_RED}ERROR:${C_NC} none of the requested tasks have been prepared successfully! Please re-check your config! Exiting" >&2
+    echo -e "${C_RED}ERROR:${C_NC} none of the requested tasks have been prepared successfully! Please re-check your config. Exiting" >&2
     exit ${E_MMD_PREP_FAIL}
 fi
 
@@ -870,7 +871,7 @@ C_TMP_TYPE="${C_GREEN}"
 
 if [[ "${NUMERRORS}" -gt 0 ]]
 then
-    echo -e "${C_RED}WARNING:${C_NC} there was some problems with ${C_YELLOW}${NUMERRORS}${C_NC} task(s). Please review job summary and your config with extra attention!" >&2
+    echo -e "${C_RED}WARNING:${C_NC} there was some problems with ${C_YELLOW}${NUMERRORS}${C_NC} task(s). Please review job summary and your config with extra attention." >&2
     C_TMP_TYPE="${C_RED}"
 fi
 

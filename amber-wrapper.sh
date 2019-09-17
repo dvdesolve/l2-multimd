@@ -24,7 +24,7 @@ DATAROOT="$@"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "ERROR: library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 ### perform some checks

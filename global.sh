@@ -60,7 +60,7 @@ check_bash() {
 
     if [ -z "${BASH_VERSION}" ]
     then
-        echo -e "${clr_red}ERROR:${clr_nc} this script support only BASH interpreter! Exiting" >&2
+        echo -e "${clr_red}ERROR:${clr_nc} this script supports only BASH interpreter! Exiting" >&2
         exit ${E_NOTABASH}
     fi
 
@@ -93,7 +93,7 @@ check_exec() {
 
     if ! command -v "$1" > /dev/null 2>&1
     then
-        echo -e "${C_TMP_RED}ERROR:${C_TMP_NC} utility ${C_TMP_YELLOW}[$1]${C_TMP_NC} not found! Exiting" >&2
+        echo -e "${C_TMP_RED}ERROR:${C_TMP_NC} util ${C_TMP_YELLOW}[$1]${C_TMP_NC} not found! Exiting" >&2
         exit ${E_CMD_NOT_FOUND};
     fi
 }

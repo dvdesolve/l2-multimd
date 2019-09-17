@@ -10,7 +10,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 
 ### global functions
-source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "Library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
+source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "ERROR: library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 ### perform some checks
@@ -65,7 +65,7 @@ if [[ ! -d "${INSTALLPATH}" ]]
 then
     echo -e "${C_PURPLE}INFO:${C_NC} doing a fresh install"
 else
-    echo -e "${C_PURPLE}INFO:${C_NC} previous installation was found,  all destination files will be overwritten"
+    echo -e "${C_PURPLE}INFO:${C_NC} previous installation was found, will overwrite all destination files"
 fi
 
 echo
@@ -103,6 +103,9 @@ do
         echo -e "${C_GREEN}ok${POSTFIX}${C_NC}"
     else
         echo -e "${C_RED}fail${C_NC}"
+        echo
+        echo -e "${C_RED}ERROR:${C_NC} something went wrong with installation! Can't write to ${C_YELLOW}[${INSTALLPATH}/${f}]${C_NC} file. Exiting" >&2
+
         exit ${E_INST_ERR_IO}
     fi
 done
