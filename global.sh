@@ -85,6 +85,7 @@ check_exec() {
     local C_TMP_NC="${C_NC}"
 
     if [[ "${mode}" -eq "${L2_PRINT_LOG}" ]]
+    then
         C_TMP_RED=""
         C_TMP_YELLOW=""
         C_TMP_NC=""
