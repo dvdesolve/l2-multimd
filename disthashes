@@ -1,8 +1,9 @@
 5dd8a99967523b903aafb15f76fc8202  global.sh
-3a064b1de2ce3127b8378761e69afd59  bash-completion/multimd
-1e2f6904b49801342124dfc21f0d1e2a  multimd.sh
+f33860d7e29e52163c836e203b36e9a1  bash-completion/multimd
+d1b92d4247e393df16524fc2275e2f52  multimd.sh
 4a8d83572615845ff8178ffaaa771436  amber-wrapper.sh
 924d3e14935d8a4689e2f59eed795548  namd-wrapper.sh
 249b2056d323837d4a25cc7c5ab867dc  gaussian-wrapper.sh
+4a3f21055d55168e98210033b4625393  cp2k-wrapper.sh
 1ebbd3e34237af26da5dc08a4e440464  LICENSE
 20e7263ef694adb4b7f65ed27aa1be7a  README.md

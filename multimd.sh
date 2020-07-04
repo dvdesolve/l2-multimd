@@ -35,18 +35,19 @@ fi
 
 
 ### list of known keywords
-KEYWORDS="DATAROOT AMBERROOT NAMDROOT GAUSSIANROOT RUNTIME PARTITION NUMNODES BIN TASK"
+KEYWORDS="DATAROOT AMBERROOT NAMDROOT GAUSSIANROOT CP2KROOT RUNTIME PARTITION NUMNODES BIN TASK"
 
 
 ### supported engines and their wrappers
 ENG_AMBER=1
 ENG_NAMD=2
 ENG_GAUSSIAN=3
+ENG_CP2K=4
 
 AMBERWRAPPER="${SCRIPTDIR}/amber-wrapper.sh"
 NAMDWRAPPER="${SCRIPTDIR}/namd-wrapper.sh"
 GAUSSIANWRAPPER="${SCRIPTDIR}/gaussian-wrapper.sh"
-
+CP2KWRAPPER="${SCRIPTDIR}/cp2k-wrapper.sh"
 
 ### some defaults
 JOBID=$$
@@ -60,6 +61,7 @@ DATAROOT=''
 AMBERROOT=''
 NAMDROOT=''
 GAUSSIANROOT=''
+CP2KROOT=''
 RUNTIME='05:00'
 PARTITION='test'
 
@@ -125,6 +127,9 @@ task () {
     elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
     then
         EXT='gin'
+	elif [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
+    then
+        EXT='inp'
     fi
 
     T_CONFIGS[${idx}]="${T_BASENAMES[${idx}]}.${EXT}"
@@ -508,6 +513,10 @@ case "${1^^}" in
     "GAUSSIAN")
         ENGINE=${ENG_GAUSSIAN}
         ;;
+		
+	"CP2K")
+        ENGINE=${ENG_CP2K}
+        ;;	
 
     *)
         echo -e "${C_RED}ERROR:${C_NC} unsupported engine ${C_YELLOW}[$1]${C_NC}! Exiting" >&2
@@ -584,6 +593,15 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
                 echo -e "${C_RED}WARNING:${C_NC} ignoring Gaussian-specific keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
             fi
             ;;
+			
+		"CP2KROOT")
+            if [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
+            then
+                CP2KROOT="${PARAMS}"
+            else
+                echo -e "${C_RED}WARNING:${C_NC} ignoring CP2K-specific keyword ${C_YELLOW}[${KEYWORD}]${C_NC} (line ${C_YELLOW}#${lineno}${C_NC})" >&2
+            fi
+            ;;	
 
         "RUNTIME")
             RUNTIME=`echo "${PARAMS}" | awk '{print $1}'`
@@ -621,9 +639,9 @@ NUMTASKS="${task_idx}"
 
 
 # check if something wrong with given taskfile, e. g. necessary keywords are omitted or no tasks to run
-if [[ -z "${DATAROOT}" || -z "${AMBERROOT}${NAMDROOT}${GAUSSIANROOT}" || -z "${RUNTIME}" || -z "${PARTITION}" || "${NUMTASKS}" -eq 0 ]]
+if [[ -z "${DATAROOT}" || -z "${AMBERROOT}${NAMDROOT}${GAUSSIANROOT}${CP2KROOT}" || -z "${RUNTIME}" || -z "${PARTITION}" || "${NUMTASKS}" -eq 0 ]]
 then
-    echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT/GAUSSIANROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting" >&2
+    echo -e "${C_RED}ERROR:${C_NC} something wrong with taskfile (check DATAROOT, AMBERROOT/NAMDROOT/GAUSSIANROOT/CP2KROOT, RUNTIME, PARTITION directives and the number of tasks given)! Exiting" >&2
     exit ${E_MMD_INV_CONF}
 fi
 
@@ -643,6 +661,9 @@ then
 elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
 then
     echo -e "Will use Gaussian engine. Gaussian is installed into ${C_YELLOW}[${GAUSSIANROOT}]${C_NC}"
+elif [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
+then
+    echo -e "Will use CP2K engine. CP2K is installed into ${C_YELLOW}[${CP2KROOT}]${C_NC}"
 fi
 
 echo -e "Time limit for the whole job is ${C_YELLOW}[${RUNTIME}]${C_NC}"
@@ -818,6 +839,9 @@ do
     elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
     then
         COMMAND="\"${GAUSSIANROOT}/${T_BINS[${task_idx}]}/${T_BINS[${task_idx}]}\" < \"${T_CONFIGS[${task_idx}]}\" > \"${T_OUTPUTS[${task_idx}]}\""
+	elif [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
+    then
+        COMMAND="\"${CP2KROOT}/${T_BINS[${task_idx}]}\" -o \"${T_OUTPUTS[${task_idx}]}\" \"${T_CONFIGS[${task_idx}]}\""
     fi
 
     # ...and store it in appropriate place
@@ -851,6 +875,9 @@ then
 elif [[ "${ENGINE}" -eq "${ENG_GAUSSIAN}" ]]
 then
     WRAPPER="${GAUSSIANWRAPPER}"
+elif [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
+then
+    WRAPPER="${CP2KWRAPPER}"
 fi
 
 # we should enclose paths in quotes to protect ourself from space-containing parameters
