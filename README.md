@@ -81,13 +81,14 @@ Here is the full list of supported keywords:
 * **AMBERROOT**
 * **NAMDROOT**
 * **GAUSSIANROOT**
+* **СP2KROOT**
 * **RUNTIME**
 * **PARTITION**
 * **NUMNODES**
 * **BIN**
 * **TASK**
 
-Some of the keywords (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown keywords are ignored.
+Some of the keywords (**DATAROOT**, **AMBERROOT**/**NAMDROOT**/**GAUSSIANROOT**/**СP2KROOT** and **TASK**) are vital and should reside in **TASKFILE** in any case. **RUNTIME**, **PARTITION**, **NUMNODES** and **BIN** have some reasonable defaults hardcoded in `multimd.sh`. All unknown keywords are ignored.
 
 ### **DATAROOT**
 This is the root directory where folders with data for MD simulations are stored. `multimd.sh` seeks here for the tasks directories. This keyword may contain whitespaces but in that case the whole path should be quoted. Remember that on Lomonosov-2 cluster all computations are carried out on scratch filesystem!
@@ -112,6 +113,12 @@ This is the root directory where Gaussian computational package is installed. `g
 
 Syntax:
 `GAUSSIANROOT /path/to/gaussian/installation`
+
+### **CP2KROOT**
+This is the directory where CP2K executable files (`cp2k.<VERSION>`, `cp2k_shell.<VERSION>`, `graph.<VERSION>`, `libcp2k_unittest.<VERSION>`) are located. Due to extreme variety of CP2K custom build configurations it cannot be predicted from CP2K root directory. Usually these executables are located in `exe/<ARCH>` subdirectory of cp2k root directory, for example, `/home/user/cp2k/exe/local_cuda_plumed`. Path may contain whitespaces but should be quoted. Because of how Lomonosov-2 cluster works CP2K distrib and all its computational libraries should be installed on scratch filesystem too. Ignored if selected engine is not `cp2k`.
+
+Syntax:
+`CP2KROOT /path/to/cp2k/installation/`
 
 ### **RUNTIME**
 Sets the runtime limit for the whole bunch of tasks. After that time SLURM will interrupt the job. Default value is `05:00`.
@@ -161,7 +168,7 @@ Number of threads for executing task in parallel. The number of nodes for supply
 Replacement for default **BIN** executable. Allows to use specific binary for task execution.
 
 ##### `-i|--cfg config`
-File where all settings for calculation are specified. Default value is `<dir-name>.in` in case of AMBER engine, `<dir-name>.conf` if NAMD engine is used and `<dir-name>.gin` for Gaussian engine.
+File where all settings for calculation are specified. Default value is `<dir-name>.in` in case of AMBER engine, `<dir-name>.conf` if NAMD engine is used, `<dir-name>.gin` for Gaussian engine and `<dir-name>.inp` for CP2K engine.
 
 ##### `-o|--out output`
 Where all output is kept. Default value is `<dir-name>.out`.
@@ -232,3 +239,10 @@ Threads number for calculation will be the following: `THREADS = NODES * NUMCORE
 
 ### Gaussian engine
 Currently **l2-multimd** doesn't support Linda + Gaussian bindings so all tasks will be run *exactly on 1 node*, however the number of threads depends on user-supplied config file. Because of specific way of setting Gaussian calculations in parallel it's all up to user to prepare config input properly to run on desirable number of CPU cores and GPU cards. If `pascal` partition has been requested then both GPUs will be available for Gaussian executables. Option `-T|--threads t` is incompatible with this engine.
+
+### CP2K engine
+CP2K has three versions with different parallelization to be used on supercomputer: 
+1. **ssmp** version with OpenMP parallelisaton, which runs only on single node. Variables OMP_NUM_THREADS and MKL_NUM_THREADS will be set to number of CPU cores. Not recommended for use on multi-node cluster, but can support **CUDA**. The main executable binary is `cp2k.ssmp`.
+2. **popt** version with single-threaded MPI parallelisation. The script will execute a number of MPI processes equal to number of cores. The main executable binary is `cp2k.ssmp`.
+3. **psmp** version, which provides combined MPI and OpenMP parallelisation. This version also can be built with **CUDA** support. Currently script runs a number of MPI processes equal to total number of cores divided by OMP_NUM_THREADS=MKL_NUM_THREADS=2. The main executable binary is `cp2k.psmp`. **Recommended for use on Lomonosov-2 with CUDA support**. If `pascal` partition has been requested then both GPUs will be available for CP2K executables.
+Option `-T|--threads t` is not yet compatible with this engine.
