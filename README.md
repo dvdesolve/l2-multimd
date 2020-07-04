@@ -243,6 +243,6 @@ Currently **l2-multimd** doesn't support Linda + Gaussian bindings so all tasks 
 ### CP2K engine
 CP2K has three versions with different parallelization to be used on supercomputer: 
 1. **ssmp** version with OpenMP parallelisaton, which runs only on single node. Variables OMP_NUM_THREADS and MKL_NUM_THREADS will be set to number of CPU cores. Not recommended for use on multi-node cluster, but can support **CUDA**. The main executable binary is `cp2k.ssmp`.
-2. **popt** version with single-threaded MPI parallelisation. The script will execute a number of MPI processes equal to number of cores. The main executable binary is `cp2k.ssmp`.
+2. **popt** version with single-threaded MPI parallelisation. The script will execute a number of MPI processes equal to number of cores. The main executable binary is `cp2k.popt`.
 3. **psmp** version, which provides combined MPI and OpenMP parallelisation. This version also can be built with **CUDA** support. Currently script runs a number of MPI processes equal to total number of cores divided by OMP_NUM_THREADS=MKL_NUM_THREADS=2. The main executable binary is `cp2k.psmp`. **Recommended for use on Lomonosov-2 with CUDA support**. If `pascal` partition has been requested then both GPUs will be available for CP2K executables.
 Option `-T|--threads t` is not yet compatible with this engine.
