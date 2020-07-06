@@ -4,6 +4,6 @@ d1b92d4247e393df16524fc2275e2f52  multimd.sh
 4a8d83572615845ff8178ffaaa771436  amber-wrapper.sh
 924d3e14935d8a4689e2f59eed795548  namd-wrapper.sh
 249b2056d323837d4a25cc7c5ab867dc  gaussian-wrapper.sh
-4a3f21055d55168e98210033b4625393  cp2k-wrapper.sh
+b76fd73638445aab54f7c1550121b60a  cp2k-wrapper.sh
 1ebbd3e34237af26da5dc08a4e440464  LICENSE
-4698e3603d16cb6babbcd266882f9f26  README.md
+6a7d7a5a5aff4a8b002117629084d4af  README.md

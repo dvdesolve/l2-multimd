@@ -60,6 +60,7 @@ echo
 
 
 # set correct number of cores per node
+# set correct number of cores per node
 declare -i NUMCORES
 case "${PARTITION,,}" in
     test|compute)
@@ -113,11 +114,12 @@ do
 
     # construct final run command depending on executable filename, working partition and threads number
     RUNCMD=""
-
+	# MCA parameters taken from https://www.hpcadvisorycouncil.com/pdf/CP2K_Analysis_and_Profiling_Intel.pdf
+	MCA_PARAMS="--mca mpi_warn_on_fork 0 --mca btl_openib_eager_limit 65536 --mca btl_openib_max_eager_rdma 8  --mca btl_openib_eager_rdma_num 8"
     case $(binname "${COMMAND}") in
         cp2k.ssmp)
             NODELIST=`echo "${NODELIST}" | awk '{print $1}'` # leave only node hostname
-            RUNCMD="export MKL_NUM_THREADS=${NUMCORES}; export OMP_NUM_THREADS=${NUMCORES};srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
+            RUNCMD="export MKL_NUM_THREADS=${NUMCORES}; export OMP_NUM_THREADS=${NUMCORES}; srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
             ;;
 
         cp2k.popt)
@@ -127,9 +129,9 @@ do
 
             if [[ "${NUMTHREADS}" -ne 0 ]]
             then
-                RUNCMD="mpirun --hostfile hostfile.${ID} -np ${NUMTHREADS} --nooversubscribe ${COMMAND}"
+                RUNCMD="mpirun --hostfile hostfile.${ID} -np ${NUMTHREADS} ${MCA_PARAMS} --nooversubscribe ${COMMAND}"
             else
-                RUNCMD="mpirun --hostfile hostfile.${ID} --npernode ${NUMCORES} --nooversubscribe ${COMMAND}"
+                RUNCMD="mpirun --hostfile hostfile.${ID} --npernode ${NUMCORES} ${MCA_PARAMS} --nooversubscribe ${COMMAND}"
             fi
             ;;
 
@@ -137,16 +139,16 @@ do
             check_exec ${L2_PRINT_LOG} "mpirun"
 			#For PSMP version default OMP_NUM_THREADS=2, adjustment to specific job may be effective
 			OMP_NUM_THREADS=2
-			#let EFFECTIVECORES=NUMCORES
-			let EFFECTIVECORES=NUMCORES/OMP_NUM_THREADS
+			#EFFECTIVECORES=NUMCORES
+			EFFECTIVECORES=$((NUMCORES/OMP_NUM_THREADS))
 			
 			sed -i "s/slots=1/slots=${EFFECTIVECORES}/g" hostfile.${ID}
 			
             if [[ "${PARTITION,,}" == "pascal" ]]
             then
-                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; export CUDA_VISIBLE_DEVICES=0,1; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} --mca mpi_warn_on_fork 0 --mca btl_openib_eager_limit 65536 --mca btl_openib_max_eager_rdma 8  --mca btl_openib_eager_rdma_num 8 --nooversubscribe ${COMMAND}"
+                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; export CUDA_VISIBLE_DEVICES=0,1; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} ${MCA_PARAMS}  --nooversubscribe ${COMMAND}"
             else
-                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} --mca mpi_warn_on_fork 0 --mca btl_openib_eager_limit 65536 --mca btl_openib_max_eager_rdma 8  --mca btl_openib_eager_rdma_num 8 --nooversubscribe ${COMMAND}"
+                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} ${MCA_PARAMS} --nooversubscribe ${COMMAND}"
             fi
             ;;
     esac
