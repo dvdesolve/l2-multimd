@@ -2,7 +2,7 @@
 
 _multimd() {
     local ENGINES
-    ENGINES="amber namd gaussian"
+    ENGINES="amber namd gaussian cp2k"
 
     case $COMP_CWORD in
         1)
