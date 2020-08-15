@@ -10,6 +10,13 @@ Though this tool has been designed specially for [Lomonosov-2 supercomputer clus
 Feel free to use it, modify it and contribute to it by reporting bugs, suggesting enhancements, feature requests and pull requests.
 
 
+## Supported engines
+Currently the following engines are supported:
+- [AMBER](https://ambermd.org/)
+- [NAMD](https://www.ks.uiuc.edu/Research/namd/)
+- [Gaussian](https://gaussian.com/). **WARNING**: support is still experimental because we have no Gaussian distribution so run wrappers are based on publicly available documentation only! No real checks were made at all so a lot of bugs possibly hide inside. Feel free to suggest changes/bugfixes/improvements via issues and pull requests.
+- [CP2K](https://www.cp2k.org/)
+
 ## Dependencies
 ### Installation
 For successfull installation make sure you have the following packages/utilities installed and available:
