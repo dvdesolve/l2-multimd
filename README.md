@@ -157,7 +157,7 @@ Syntax:
 This is the core keyword for job queueing. It allows you to specify directory name for every task, input config files, output files and, if AMBER engine is used, to specify AMBER-compatible list of options such as topology files, restart files etc. The only mandatory argument is directory name for the task. Other options could be derived automatically (see default values for those options). Unknown options are ignored. All options (with the exception of nodes/threads number) can contain whitespaces, but remember about quotation!
 
 Syntax:
-`TASK dir-name [{-N|--nodes n} | {-T|--threads t}] [-b|--bin executable-name] [-i|--cfg config] [-o|--out output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-inf|--mdinfo info] [-cpin cph-input] [-cpout cph-output] [-cprestrt cph-restart] [-groupfile remd-groupfile] [-ng replicas] [-rem re-type]`
+`TASK dir-name [{-N|--nodes n} | {-T|--threads t}] [-b|--bin executable-name] [-i|--cfg config] [-o|--out output] [-p|--prmtop prmtop] [-c|--inpcrd coordinates] [-r|--restrt restart] [-ref|--refc restraints] [-x|--mdcrd trajectory] [-v|--mdvel velocities] [-e|--mden energies] [-inf|--mdinfo info] [-cpin cph-input] [-cpout cph-output] [-cprestrt cph-restart] [-groupfile remd-groupfile] [-ng replicas] [-rem re-type]`
 
 #### Common options
 These options have the same meaning for any engine.
@@ -200,6 +200,9 @@ File in which MD trajectory should be saved. Default value is `<dir-name>.nc`.
 
 ##### `-v|-mdvel velocities`
 AMBER will save velocities here, unless `ntwv` parameter in simulation config is equal to `-1`. There is no default value for this parameter.
+
+##### `-e|-mden energies`
+AMBER will save energies here. There is no default value for this parameter.
 
 ##### `-inf|--mdinfo info`
 File where all MD run statistics are kept. Default value is `<dir-name>.mdinfo`.

@@ -86,6 +86,7 @@ declare -a T_AMB_RESTARTS
 declare -a T_AMB_REFCS
 declare -a T_AMB_TRAJS
 declare -a T_AMB_VELS
+declare -a T_AMB_ENS
 declare -a T_AMB_INFOS
 declare -a T_AMB_CPINS
 declare -a T_AMB_CPOUTS
@@ -144,6 +145,7 @@ task () {
         T_AMB_REFCS[${idx}]=""
         T_AMB_TRAJS[${idx}]="${T_BASENAMES[${idx}]}.nc"
         T_AMB_VELS[${idx}]=""
+        T_AMB_ENS[${idx}]=""
         T_AMB_INFOS[${idx}]="${T_BASENAMES[${idx}]}.mdinfo"
         T_AMB_CPINS[${idx}]=""
         T_AMB_CPOUTS[${idx}]=""
@@ -328,6 +330,23 @@ task () {
                     fi
 
                     T_AMB_VELS[${idx}]="$2"
+                else
+                    echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
+                fi
+
+                shift 2
+                ;;
+
+            -e|--mden)
+                if [[ "${ENGINE}" -eq "${ENG_AMBER}" ]]
+                then
+                    if [[ "$#" -lt 2 ]]
+                    then
+                        echo -e "${C_RED}ERROR:${C_NC} parameters string is messed up for task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}! Exiting" >&2
+                        exit ${E_MMD_INV_TASK}
+                    fi
+
+                    T_AMB_ENS[${idx}]="$2"
                 else
                     echo -e "${C_RED}WARNING:${C_NC} skipping AMBER-specific parameter ${C_YELLOW}[${token}]${C_NC} in task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC}" >&2
                 fi
@@ -748,6 +767,11 @@ do
             echo -e "Velocities will be written to file ${C_YELLOW}[${T_AMB_VELS[${task_idx}]}]${C_NC}"
         fi
 
+        if [[ -n "${T_AMB_ENS[${task_idx}]}" ]]
+        then
+            echo -e "Energies will be written to file ${C_YELLOW}[${T_AMB_ENS[${task_idx}]}]${C_NC}"
+        fi
+
         echo -e "MD information will be available in file ${C_YELLOW}[${T_AMB_INFOS[${task_idx}]}]${C_NC}"
 
         if [[ -n "${T_AMB_CPINS[${task_idx}]}" ]]
@@ -802,6 +826,11 @@ do
         if [[ -n "${T_AMB_VELS[${task_idx}]}" ]]
         then
             COMMAND="${COMMAND} -v \"${T_AMB_VELS[${task_idx}]}\""
+        fi
+
+        if [[ -n "${T_AMB_ENS[${task_idx}]}" ]]
+        then
+            COMMAND="${COMMAND} -e \"${T_AMB_ENS[${task_idx}]}\""
         fi
 
         if [[ -n "${T_AMB_CPINS[${task_idx}]}" ]]
