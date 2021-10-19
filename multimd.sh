@@ -484,7 +484,7 @@ task () {
     if [[ "${ENGINE}" -eq "${ENG_AMBER}" ]]
     then
         case "${T_BINS[${idx}]}" in
-            sander|pmemd|pmemd.cuda|pmemd.cuda.MPI)
+            sander|pmemd|pmemd.cuda.MPI)
                 if [[ "${T_THREADS[${idx}]}" -ne 0 ]]
                 then
                     echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can't be run in custom threaded mode (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
@@ -496,6 +496,14 @@ task () {
                     echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC} (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
                     exit ${E_MMD_INV_TASK}
                 fi 
+                ;;
+
+            pmemd.cuda)
+                if [[ "${T_NODES[${idx}]}" -ne 1 ]]
+                then
+                   echo -e "${C_RED}ERROR:${C_NC} executable ${C_YELLOW}[${T_BINS[${idx}]}]${C_NC} can be run only on 1 node, but requested number is ${C_YELLOW}[${T_NODES[${idx}]}]${C_NC} (task ${C_YELLOW}#$((idx + 1))${C_NC}, line ${C_YELLOW}#${lineno}${C_NC})! Exiting" >&2
+                   exit ${E_MMD_INV_TASK}
+                fi
                 ;;
         esac
     fi
@@ -533,7 +541,7 @@ case "${1^^}" in
         ENGINE=${ENG_GAUSSIAN}
         ;;
 		
-	"CP2K")
+	  "CP2K")
         ENGINE=${ENG_CP2K}
         ;;	
 
@@ -613,7 +621,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
             fi
             ;;
 			
-		"CP2KROOT")
+		    "CP2KROOT")
             if [[ "${ENGINE}" -eq "${ENG_CP2K}" ]]
             then
                 CP2KROOT="${PARAMS}"
@@ -710,30 +718,43 @@ TOTALNODES=0
 RUNLIST="${DATAROOT}/runlist.${JOBID}"
 :> "${RUNLIST}"
 
+source "${SCRIPTDIR}/partitions.sh" 2> /dev/null || { echo "ERROR: library file partitions.sh not found! Exiting"; exit ${E_SCRIPT}; }
+
 for ((task_idx=0; task_idx < NUMTASKS; task_idx++))
 do
     # recalculate number of nodes for special cases
-    if [[ ("${T_THREADS[${task_idx}]}" -ne 0) && (("${ENGINE}" -eq "${ENG_AMBER}") && (("${T_BINS[${task_idx}]}" == "sander.MPI" ) || ("${T_BINS[${task_idx}]}" == "pmemd.MPI"))) ]]
+    # partition parameters imported above
+
+    if [[ ("${T_THREADS[${task_idx}]}" -ne 0) && ("${ENGINE}" -eq "${ENG_AMBER}") ]]
     then
         declare -i NUMTHREADS
         NUMTHREADS=${T_THREADS[${task_idx}]}
+        case "${T_BINS[${task_idx}]}" in
+            sander.MPI|pmemd.MPI)
+                T_NODES[${task_idx}]=$((1 + (NUMTHREADS - 1) / NUMCORES))
+            ;;
 
-        declare -i NUMCORES
-        case "${PARTITION,,}" in
-            test|compute)
-                NUMCORES=14
-                ;;
+            pmemd.cuda)
+                T_NODES[${task_idx}]=1
+                if [[ "${NUMTHREADS}" -gt "${NUMGPUS}" ]]
+                then
+                    echo -e "${C_RED}ERROR:${C_NC} Unsupported thread configuration! You asked more tasks per node then there are GPUs available! Exiting" >&2
+                    exit ${E_MMD_INV_TASK}
+                fi
+                if [[ "${task_idx}" > 0 ]]
+                then
+                   if [[ ${T_THREADS[${task_idx}]} -ne ${T_THREADS[$((task_idx-1))]} ]]
+                   then
+                      echo -e "${C_RED}ERROR:${C_NC} Unsupported thread configuration! All threading configuration must be the same! Exiting" >&2
+                      exit ${E_MMD_INV_TASK}
+                   fi
+                fi
+            ;;
 
-            pascal)
-                NUMCORES=12
-                ;;
+            *)
 
-            *)  
-                NUMCORES=1
-                ;;
+              ;;
         esac
-
-        T_NODES[${task_idx}]=$((1 + (NUMTHREADS - 1) / NUMCORES))
     fi
 
     echo -e "${C_PURPLE}>> Task #$((task_idx + 1)) <<${C_NC}"
@@ -891,6 +912,53 @@ do
     echo
 done
 
+# Special case - pmemd.cuda on multi-GPU node
+if [[ ("${ENGINE}" -eq "${ENG_AMBER}") && ("${T_BINS[0]}" == "pmemd.cuda") ]]
+then
+ALL_TASKS_PMEMD_CUDA=true
+for TASK_BIN in "${T_BINS[@]}"
+  do
+    if [[ "${TASK_BIN}" != "pmemd.cuda" ]]
+    then
+      ALL_TASKS_PMEMD_CUDA=false
+      echo -e "${C_RED}WARNING:${C_NC} Detected pmemd.cuda in combination with ${TASK_BIN}. Cannot distribute between GPUs"
+      break
+    fi
+  done
+fi
+
+if [[ ("${ENGINE}" -eq "${ENG_AMBER}") && ("${ALL_TASKS_PMEMD_CUDA}" == true) && ("${NUMGPUS}" -gt 1) ]]
+then
+    echo -e "Detected pmemd.cuda on multi-GPU partition. Distributing tasks to increase efficency"
+    declare -i NUM_TASKS_PER_NODE
+    declare -i TASKS_REMAINDER
+    declare -i TOTAL_MULTITASK_NODES
+    # We already checked that NUMTHREADS <= NUMGPUS
+    if [[ "${T_THREADS[0]}" -ne 0 ]]
+    then
+       echo -e "You requested custom number of tasks per node: ${C_YELLOW}[${T_THREADS[0]}]${C_NC}"
+       NUM_TASKS_PER_NODE="${T_THREADS[0]}"
+    else
+       NUM_TASKS_PER_NODE=NUMGPUS
+    fi
+    let "TOTAL_MULTITASK_NODES = NUMTASKS / NUM_TASKS_PER_NODE"
+    let "TASKS_REMAINDER = NUMTASKS % NUM_TASKS_PER_NODE"
+    echo -e "Placed ${C_YELLOW}[${NUM_TASKS_PER_NODE}]${C_NC} tasks per node"
+    if [[ "${TASKS_REMAINDER}" -gt 0 ]]
+    then
+        let "TOTAL_MULTITASK_NODES += 1"
+        echo -e "${C_RED}WARNING:${C_NC} Inefficient configuration: you have unused GPUs. Provide number of tasks divisible by number of GPUs per node" >&2
+    fi
+    if [[ "${TOTAL_MULTITASK_NODES}" -le "${TOTALNODES}" ]]
+    then
+        echo -e "Will use ${C_YELLOW}[${TOTAL_MULTITASK_NODES}]${C_NC} nodes in total"
+        TOTALNODES=${TOTAL_MULTITASK_NODES}
+    else
+        echo -e "${C_RED}ERROR:${C_NC} Cannot distribute pmemd.cuda tasks between multi-GPU nodes! Exiting" >&2
+        exit ${E_MMD_INV_CONF}
+    fi
+
+fi
 
 # prepare SLURM command
 WRAPPER=''

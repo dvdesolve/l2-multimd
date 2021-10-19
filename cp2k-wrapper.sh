@@ -60,21 +60,7 @@ echo
 
 
 # set correct number of cores per node
-# set correct number of cores per node
-declare -i NUMCORES
-case "${PARTITION,,}" in
-    test|compute)
-        NUMCORES=14
-        ;;
-
-    pascal)
-        NUMCORES=12
-        ;;
-
-    *)
-        NUMCORES=1
-        ;;
-esac
+source "${SCRIPTDIR}/partitions.sh" 2> /dev/null || { echo "ERROR: library file partitions.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 
 # distribute nodes between tasks accordingly and run them
@@ -140,13 +126,14 @@ do
 			#For PSMP version default OMP_NUM_THREADS=2, adjustment to specific job may be effective
 			OMP_NUM_THREADS=2
 			#EFFECTIVECORES=NUMCORES
-			EFFECTIVECORES=$((NUMCORES/OMP_NUM_THREADS))
+			let "EFFECTIVECORES = NUMCORES / OMP_NUM_THREADS"
 			
 			sed -i "s/slots=1/slots=${EFFECTIVECORES}/g" hostfile.${ID}
 			
-            if [[ "${PARTITION,,}" == "pascal" ]]
+            if [[ "${NUMGPUS}" -gt 1 ]]
             then
-                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; export CUDA_VISIBLE_DEVICES=0,1; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} ${MCA_PARAMS}  --nooversubscribe ${COMMAND}"
+                CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((NUMGPUS-1)))
+                RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} ${MCA_PARAMS}  --nooversubscribe ${COMMAND}"
             else
                 RUNCMD="export MKL_NUM_THREADS=${OMP_NUM_THREADS}; export OMP_NUM_THREADS=${OMP_NUM_THREADS}; mpirun --hostfile hostfile.${ID} --npernode ${EFFECTIVECORES} ${MCA_PARAMS} --nooversubscribe ${COMMAND}"
             fi
