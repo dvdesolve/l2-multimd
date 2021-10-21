@@ -35,7 +35,7 @@ L2_ROOT=
 
 
 ### version string
-L2_MMD_VER=0.5.0
+L2_MMD_VER=0.6.0
 
 
 ### printout modes

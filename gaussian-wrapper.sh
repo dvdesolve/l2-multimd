@@ -25,7 +25,7 @@ DATAROOT="$@"
 
 ### global functions
 source "${SCRIPTDIR}/global.sh" 2> /dev/null || { echo "ERROR: library file global.sh not found! Exiting"; exit ${E_SCRIPT}; }
-
+source "${SCRIPTDIR}/partitions.sh" 2> /dev/null || { echo "ERROR: library file partitions.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 ### perform some checks
 check_bash ${L2_PRINT_LOG}
@@ -92,9 +92,10 @@ do
     # construct final run command depending on working partition
     RUNCMD="srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
 
-    if [[ "${PARTITION,,}" == "pascal" ]]
+    if [[ "${NUMGPUS}" -gt 1 ]]
     then
-        RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; ${RUNCMD}"
+        CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((NUMGPUS-1)))
+        RUNCMD="export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}; ${RUNCMD}"
     fi
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files

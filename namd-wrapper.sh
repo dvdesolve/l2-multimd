@@ -61,21 +61,7 @@ echo
 
 
 # set correct number of cores per node
-declare -i NUMCORES
-case "${PARTITION,,}" in
-    test|compute)
-        NUMCORES=14
-        ;;
-
-    pascal)
-        NUMCORES=12
-        ;;
-
-    *)
-        NUMCORES=1
-        ;;
-esac
-
+source "${SCRIPTDIR}/partitions.sh" 2> /dev/null || { echo "ERROR: library file partitions.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 # distribute nodes between tasks accordingly and run them
 declare -i node
@@ -119,9 +105,10 @@ do
     # construct final run command depending on working partition
     RUNCMD="charmrun ++p ${NUMTHREADS} ++nodelist nodelist.${ID} ++ppn ${NUMCORES} ++runscript ${COMMAND}"
 
-    if [[ "${PARTITION,,}" == "pascal" ]]
+    if [[ "${NUMGPUS}" -gt 1 ]]
     then
-        RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; ${RUNCMD}"
+        CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((NUMGPUS-1)))
+        RUNCMD="export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}; ${RUNCMD}"
     fi
 
     # ugly hack - we need this fucking 'eval' because of proper whitespace handling in given binaries and other files

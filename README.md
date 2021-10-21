@@ -229,16 +229,22 @@ Replica exchange type. Default value is empty.
 ## Parallelization policy
 **l2-multimd** software manages it's own policy to run jobs in parallel. Specific technique depends on selected engine, executable and number of nodes/threads requested. Currently Lomonosov-2 cluster provides the following partitions for performing calculations:
 
-Partition name | CPU type | GPU type | Number of CPU cores (`NUMCORES`) | Number of GPUs | Available RAM, Gb
+Partition name | CPU type | GPU type | Number of CPU cores (`NUMCORES`) | Number of GPUs (`NUMGPUS`) | Available RAM, Gb
 ---------------|----------|----------|----------------------------------|----------------|------------------
 `test` | Intel Haswell-EP E5-2697v3, 2.6 GHz | NVidia Tesla K40M | 14 | 1 | 64
 `compute` | Intel Haswell-EP E5-2697v3, 2.6 GHz | NVidia Tesla K40M | 14 | 1 | 64
-`pascal` | Intel Xeon Gold 6126, 2.6 GHz | Nvidia P100 | 12 | 2 | 96
+`pascal` | Intel Xeon Gold 6126, 2.6 GHz | NVidia Tesla P100 | 12 | 2 | 92
+`volta1` | Intel Xeon Gold 6126, 2.6 GHz | NVidia Tesla V100 | 12 | 2 | 92
+`volta2` | 2x Intel Xeon Xeon Gold 6240, 2.6 GHz | NVidia Tesla V100 | 36 | 1 | 1536 
+
 
 Here are basic rules for all possible combinations supported by **l2-multimd**.
 
 ### AMBER engine
-Executables `sander`, `pmemd` and `pmemd.cuda` can only be run in single instance (1 thread and 1 node). Thus, option `-T|--threads t` is incompatible with these executables.
+Executables `sander`, `pmemd` can only be run in single instance (1 thread and 1 node). Thus, option `-T|--threads t` is incompatible with these executables.
+
+For `pmemd.cuda` the script will place independent tasks on all GPUs present on nodes. For example, if you asked for 8 tasks on `pascal` partition with 2 GPUs per node, the script will allocate 4 nodes and run 2 tasks per node on different GPUs. You can override this behavior by setting desired number of tasks per node in `-T|--threads t` variable (but not more than GPUs per node), for example, if your task consumes a lot of memory and have to be run in single instance per node.
+You should create the number of tasks divisible by number of GPUs per node for maximum node utilization efficiency.
 
 If there are no `-T|--threads t` option is specified in task definition then `sander.MPI` and `pmemd.MPI` will be run with `NODES * NUMCORES` threads without oversubscribing. However, if that option is present then `-N|--nodes n` option will be ignored and required number of nodes for the task will be recalculated according to the `NUMCORES` property of selected partition.
 

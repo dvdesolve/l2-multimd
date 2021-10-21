@@ -60,27 +60,15 @@ echo
 
 
 # set correct number of cores per node
-declare -i NUMCORES
-case "${PARTITION,,}" in
-    test|compute)
-        NUMCORES=14
-        ;;
-
-    pascal)
-        NUMCORES=12
-        ;;
-
-    *)
-        NUMCORES=1
-        ;;
-esac
-
+source "${SCRIPTDIR}/partitions.sh" 2> /dev/null || { echo "ERROR: library file partitions.sh not found! Exiting"; exit ${E_SCRIPT}; }
 
 # distribute nodes between tasks accordingly and run them
 declare -i node
 node=1
 
 declare -i tnum
+declare -i gpunum
+gpunum=0
 
 for ((tnum=1; tnum <= NUMTASKS; tnum++))
 do
@@ -96,6 +84,26 @@ do
 
     NUMNODES=`echo "${line}" | awk '{print $1}'`
     NUMTHREADS=`echo "${line}" | awk '{print $2}'`
+
+    # in case of multiple instances pmemd.cuda on one node - go another round
+    if [[ ( $(binname "${COMMAND}") == "pmemd.cuda" ) && ("${node}" -gt ${SLURM_JOB_NUM_NODES}) ]]
+    then
+      node=1
+      let gpunum++
+
+      if [[ "${gpunum}" -gt "$((NUMGPUS - 1))" ]]
+      then
+         echo "Exceeded number of GPUs"
+         exit ${E_SCRIPT}
+      fi
+
+      if [[ ("${NUMTHREADS}" -gt 0) && ("${gpunum}" -gt "$((NUMTHREADS - 1))") ]]
+      then
+         echo "Exceeded number of Threads"
+         exit ${E_SCRIPT}
+      fi
+    fi
+
     NODELIST=`sed -n "${node},$((node + NUMNODES - 1))p" "${HOSTFILE}"`
     let "node += NUMNODES"
 
@@ -115,9 +123,19 @@ do
     RUNCMD=""
 
     case $(binname "${COMMAND}") in
-        sander|pmemd|pmemd.cuda)
+        sander|pmemd)
             NODELIST=`echo "${NODELIST}" | awk '{print $1}'` # leave only node hostname
             RUNCMD="srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
+            ;;
+
+        pmemd.cuda)
+            NODELIST=`echo "${NODELIST}" | awk '{print $1}'` # leave only node hostname
+            RUNCMD="srun --nodes=1 --nodelist=${NODELIST} ${COMMAND}"
+            if [[ "$NUMGPUS" -gt 1 ]]
+            then
+              echo "Using GPU ${gpunum} on node ${NODELIST}"
+              RUNCMD="export CUDA_VISIBLE_DEVICES=${gpunum}; ${RUNCMD}"
+            fi
             ;;
 
         sander.MPI|pmemd.MPI)
@@ -136,10 +154,11 @@ do
         pmemd.cuda.MPI)
             check_exec ${L2_PRINT_LOG} "mpirun"
 
-            if [[ "${PARTITION,,}" == "pascal" ]]
+            if [[ "$NUMGPUS" -gt 1 ]]
             then
-                sed -i "s/slots=1/slots=2/g" hostfile.${ID}
-                RUNCMD="export CUDA_VISIBLE_DEVICES=0,1; mpirun --hostfile hostfile.${ID} --npernode 2 --nooversubscribe ${COMMAND}"
+                sed -i "s/slots=1/slots=${NUMGPUS}/g" hostfile.${ID}
+                CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((NUMGPUS-1)))
+                RUNCMD="export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}; mpirun --hostfile hostfile.${ID} --npernode ${NUMGPUS} --nooversubscribe ${COMMAND}"
             else
                 RUNCMD="mpirun --hostfile hostfile.${ID} --npernode 1 --nooversubscribe ${COMMAND}"
             fi
