@@ -15,7 +15,7 @@ case "${PARTITION,,}" in
 
     volta2)
         NUMCORES=36
-        NUMGPUS=1
+        NUMGPUS=2
         ;;
 
     *)

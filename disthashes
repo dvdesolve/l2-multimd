@@ -1,5 +1,5 @@
 b3ed177a3db212cfadd46038a66ad3b2  global.sh
-c5c505acdfb23e429da66ecc21c4e231  partitions.sh
+cd87b992671dd72edd3de328cc791a2f  partitions.sh
 f33860d7e29e52163c836e203b36e9a1  bash-completion/multimd
 56830607e2ec09e24fa9f4ffdf9dcecf  multimd.sh
 f8039358a4678ce5409a301bcb6ff04e  amber-wrapper.sh
