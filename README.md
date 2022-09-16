@@ -235,7 +235,7 @@ Partition name | CPU type | GPU type | Number of CPU cores (`NUMCORES`) | Number
 `compute` | Intel Haswell-EP E5-2697v3, 2.6 GHz | NVidia Tesla K40M | 14 | 1 | 64
 `pascal` | Intel Xeon Gold 6126, 2.6 GHz | NVidia Tesla P100 | 12 | 2 | 92
 `volta1` | Intel Xeon Gold 6126, 2.6 GHz | NVidia Tesla V100 | 12 | 2 | 92
-`volta2` | 2x Intel Xeon Xeon Gold 6240, 2.6 GHz | NVidia Tesla V100 | 36 | 1 | 1536 
+`volta2` | 2x Intel Xeon Xeon Gold 6240, 2.6 GHz | NVidia Tesla V100 | 36 | 2 | 1536 
 
 
 Here are basic rules for all possible combinations supported by **l2-multimd**.
